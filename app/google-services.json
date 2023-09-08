@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205637270396",
+    "project_id": "basketbud-6ccf0",
+    "storage_bucket": "basketbud-6ccf0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205637270396:android:b516a65507c3dec14a02f9",
+        "android_client_info": {
+          "package_name": "capstone.thriftytech.basketbud"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv0_R7aRDi0vngnup8XyqEf8NZbDVp6iI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
