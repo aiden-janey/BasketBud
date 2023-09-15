@@ -52,6 +52,7 @@
         android:gravity="center"
         android:onClick="logIntoAcct"/>
 
+
     <TextView
         android:id="@+id/register_now"
         android:layout_width="match_parent"
@@ -61,13 +62,14 @@
         android:onClick="toRegisterPage"
         android:text="Click to Register"
         android:textSize="15sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:gravity="center"/>
 
     <TextView
         android:id="@+id/forgot_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="right"
+        android:gravity="center"
         android:minHeight="48dp"
         android:onClick="forgotPassword"
         android:text="Forgot Password (WIP)"
