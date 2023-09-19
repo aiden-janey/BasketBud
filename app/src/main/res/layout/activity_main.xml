@@ -19,11 +19,14 @@
             android:layout_height="wrap_content"
             android:id="@+id/user_details"/>
 
-        <Button
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="logoutOfAcct"
-            android:text="Logout"/>
+            android:layout_gravity="end|bottom"
+            android:src="@drawable/common_google_signin_btn_icon_light"
+            android:id="@+id/scan_btn"
+            android:onClick="openCamera"
+            android:contentDescription="Scan Receipt"/>
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView
@@ -33,10 +36,4 @@
         app:menu="@menu/nav_menu"
         android:id="@+id/nav_view"/>
 
-<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_gravity="end|bottom"-->
-<!--        android:src="@drawable/common_google_signin_btn_icon_light"-->
-<!--        android:layout_margin="20dp"/>-->
 </androidx.drawerlayout.widget.DrawerLayout>

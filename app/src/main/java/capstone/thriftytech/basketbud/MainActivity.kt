@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import capstone.thriftytech.basketbud.databinding.ActivityMainBinding
@@ -54,14 +55,25 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (actionBar.onOptionsItemSelected(item)){
             true
-        }else
+        }else if(item.itemId == R.id.nav_logout){
+            logoutOfAcct()
+            true
+        } else
             super.onOptionsItemSelected(item)
     }
 
-    fun logoutOfAcct(view: View) {
+    private fun logoutOfAcct() {
         FirebaseAuth.getInstance().signOut()
         val intent = Intent(this, Login::class.java)
         startActivity(intent)
         finish()
+        Toast.makeText(this, "Successful Logout", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openCamera(){
+        val intent = Intent(this, Login::class.java)
+        startActivity(intent)
+        finish()
+        Toast.makeText(this, "Successful Logout", Toast.LENGTH_SHORT).show()
     }
 }
