@@ -22,8 +22,8 @@
             android:id="@+id/scan_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="Scan Receipt"
-            android:onClick="openCamera"
+            android:layout_gravity="end|bottom"
+            android:contentDescription="Go To Camera Page"
             android:src="@drawable/common_google_signin_btn_icon_light"
             android:layout_centerInParent="true"
             android:layout_above="@id/bottom_navigation"
@@ -44,4 +44,5 @@
         android:layout_gravity="start"
         app:menu="@menu/nav_menu"
         android:id="@+id/nav_view" />
+
 </androidx.drawerlayout.widget.DrawerLayout>
