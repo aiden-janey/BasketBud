@@ -8,32 +8,40 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/user_details"/>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/container"
+            android:layout_above="@+id/bottom_navigation"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/scan_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:src="@drawable/common_google_signin_btn_icon_light"
-            android:id="@+id/scan_btn"
+            android:contentDescription="Scan Receipt"
             android:onClick="openCamera"
-            android:contentDescription="Scan Receipt"/>
-    </LinearLayout>
+            android:src="@drawable/common_google_signin_btn_icon_light"
+            android:layout_centerInParent="true"
+            android:layout_above="@id/bottom_navigation"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="16dp"/>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/bottom_navigation"
+            app:menu="@menu/bottom_navigation_menu"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/nav_menu"
-        android:id="@+id/nav_view"/>
-
+        android:id="@+id/nav_view" />
 </androidx.drawerlayout.widget.DrawerLayout>
