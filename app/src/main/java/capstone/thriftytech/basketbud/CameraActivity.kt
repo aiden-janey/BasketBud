@@ -28,6 +28,8 @@ import android.util.Log
 import android.widget.Button
 import androidx.camera.core.ImageCaptureException
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -46,23 +48,19 @@ class CameraActivity : AppCompatActivity() {
     private var imgCapture: ImageCapture? = null
     private lateinit var camExecutor: ExecutorService
 
+    //Checks for Permissions to use the Camera before starting
     private val activityResultLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions())
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions())
         { permissions ->
-            // Handle Permission granted/rejected
             var permissionGranted = true
             permissions.entries.forEach {
-                if (it.key in REQUIRED_PERMISSIONS && it.value == false)
+                if (it.key in REQUIRED_PERMISSIONS && !it.value)
                     permissionGranted = false
             }
-            if (!permissionGranted) {
-                Toast.makeText(baseContext,
-                    "Permission request denied",
-                    Toast.LENGTH_SHORT).show()
-            } else {
+            if (!permissionGranted)
+                Toast.makeText(baseContext, "Permission request denied", Toast.LENGTH_SHORT).show()
+            else
                 startCamera()
-            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,15 +70,12 @@ class CameraActivity : AppCompatActivity() {
 
         scanBtn = binding.scanBtn
 
-        //Request Camera Permissions
         if(permissionsGranted())
             startCamera()
         else
             activityResultLauncher.launch(REQUIRED_PERMISSIONS)
 
-        scanBtn.setOnClickListener {
-            scanReceipt()
-        }
+        scanBtn.setOnClickListener { scanReceipt() }
         camExecutor = Executors.newSingleThreadExecutor()
 
     }
@@ -93,68 +88,51 @@ class CameraActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
-            // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Preview
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
 
-            // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
-
-                // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview)
-
-            } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+            } catch(err: Exception) {
+                Log.e(TAG, "Use case binding failed", err)
             }
 
         }, ContextCompat.getMainExecutor(this))
     }
 
     private fun scanReceipt() {
-        // Get a stable reference of the modifiable image capture use case
         val imageCapture = imgCapture ?: return
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-        // Create time stamped name and MediaStore entry.
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
+        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P)
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-            }
+
         }
 
-        // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues)
-            .build()
+            .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues).build()
 
-        // Set up image capture listener, which is triggered after photo has
-        // been taken
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                override fun onError(err: ImageCaptureException) {
+                    Log.e(TAG, "Photo capture failed: ${err.message}", err)
                 }
-
-                override fun
-                        onImageSaved(output: ImageCapture.OutputFileResults){
+                override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
@@ -173,12 +151,10 @@ class CameraActivity : AppCompatActivity() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
             mutableListOf (
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO
+                Manifest.permission.CAMERA
             ).apply {
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P)
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
             }.toTypedArray()
     }
 }

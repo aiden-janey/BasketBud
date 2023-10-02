@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drawer: DrawerLayout
     private lateinit var actionBar: ActionBarDrawerToggle
     private lateinit var navView: NavigationView
-    lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var scanBtn: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,8 +54,6 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
             finish()
-        } else {
-            txtUser?.text = user?.email
         }
 
         scanBtn.setOnClickListener {
@@ -64,17 +62,17 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
-        replaceFragment(HomeFragment())
-
-        bottomNavigationView.setOnItemSelectedListener {
-            when (it.itemId) {
-                R.id.home -> replaceFragment(HomeFragment())
-                R.id.basket -> replaceFragment(BasketFragment())
-                R.id.monthly_budget -> replaceFragment(MonthlyBudgetFragment())
-                R.id.notification -> replaceFragment(NotificationFragment())
-            }
-            true
-        }
+//        replaceFragment(HomeFragment())
+//
+//        bottomNavigationView.setOnItemSelectedListener {
+//            when (it.itemId) {
+//                R.id.home -> replaceFragment(HomeFragment())
+//                R.id.basket -> replaceFragment(BasketFragment())
+//                R.id.monthly_budget -> replaceFragment(MonthlyBudgetFragment())
+//                R.id.notification -> replaceFragment(NotificationFragment())
+//            }
+//            true
+//        }
 
     }
 
@@ -86,10 +84,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (actionBar.onOptionsItemSelected(item)){
+        var result = if (actionBar.onOptionsItemSelected(item)) {
             true
-        } else
+        }else{
             super.onOptionsItemSelected(item)
+        }
+        return result
     }
 
     private fun logoutOfAcct() {
