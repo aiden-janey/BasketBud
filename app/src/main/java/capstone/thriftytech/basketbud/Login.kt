@@ -20,7 +20,7 @@ class Login : AppCompatActivity() {
 
     private var eTxtEmail: TextInputEditText? = null
     private var eTxtPass: TextInputEditText? = null
-    private var progressBar: ProgressBar? = null
+    private var progBar: ProgressBar? = null
 
     public override fun onStart() {
         super.onStart()
@@ -39,11 +39,11 @@ class Login : AppCompatActivity() {
         setContentView(binding.root)
         eTxtEmail = binding.email
         eTxtPass = binding.password
-        progressBar = binding.progBar
+        progBar = binding.progBar
     }
 
     fun logIntoAcct(view: View) {
-        progressBar?.visibility = View.VISIBLE
+        progBar?.visibility = View.VISIBLE
         var email = ""
         var password = ""
         email = eTxtEmail?.text.toString()
@@ -53,32 +53,21 @@ class Login : AppCompatActivity() {
         if(TextUtils.isEmpty(email)){
             Toast.makeText(this, "Enter Email", Toast.LENGTH_SHORT).show()
         }
-        if(TextUtils.isEmpty(email)){
-            Toast.makeText(this, "Enter Email", Toast.LENGTH_SHORT).show()
+        if(TextUtils.isEmpty(password)){
+            Toast.makeText(this, "Enter Password", Toast.LENGTH_SHORT).show()
         }
 
         //Sign in
         auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                progressBar?.visibility = View.GONE
-                if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Toast.makeText(
-                        this,
-                        "Successful Login.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+            .addOnCompleteListener(this) { action ->
+                progBar?.visibility = View.GONE
+                if (action.isSuccessful) {
+                    Toast.makeText(this, "Successful Login.", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                     finish()
-                } else {
-                    // If sign in fails, display a message to the user.
-                    Toast.makeText(
-                        this,
-                        "Authentication failed.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
-                }
+                } else
+                    Toast.makeText(this, "Login Failed.", Toast.LENGTH_SHORT).show()
             }
     }
 

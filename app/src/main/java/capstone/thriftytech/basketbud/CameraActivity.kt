@@ -26,10 +26,15 @@ import androidx.camera.core.Preview
 import androidx.camera.core.CameraSelector
 import android.util.Log
 import android.widget.Button
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
+import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.io.IOException
+import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -88,25 +93,30 @@ class CameraActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            val camProv: ProcessCameraProvider = cameraProviderFuture.get()
 
-            val preview = Preview.Builder()
-                .build()
-                .also {
+            val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
+            imgCapture = ImageCapture.Builder().build()
 
+            val imgAnalyze = ImageAnalysis.Builder().build().also{
+                it.setAnalyzer(camExecutor, LuminosityAnalyzer{
+                        luma->Log.d(TAG, "Average Luminosity $luma")
+                })
+            }
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview)
+                camProv.unbindAll()
+                camProv.bindToLifecycle(
+                    this, cameraSelector, preview, imgCapture, imgAnalyze)
             } catch(err: Exception) {
                 Log.e(TAG, "Use case binding failed", err)
             }
-
         }, ContextCompat.getMainExecutor(this))
+
+
     }
 
     private fun scanReceipt() {
@@ -114,6 +124,7 @@ class CameraActivity : AppCompatActivity() {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
+
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -123,7 +134,8 @@ class CameraActivity : AppCompatActivity() {
         }
 
         val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues).build()
+            .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            .build()
 
         imageCapture.takePicture(
             outputOptions,
@@ -133,9 +145,30 @@ class CameraActivity : AppCompatActivity() {
                     Log.e(TAG, "Photo capture failed: ${err.message}", err)
                 }
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
+                    val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
+
+                    val result = recognizer.process(img)
+                        .addOnSuccessListener {
+                            val resultText = it.text
+                            for (block in it.textBlocks) {
+                                val blockText = block.text
+                                val blockCornerPoints = block.cornerPoints
+                                val blockFrame = block.boundingBox
+                                for (line in block.lines) {
+                                    val lineText = line.text
+                                    val lineCornerPoints = line.cornerPoints
+                                    val lineFrame = line.boundingBox
+                                    for (element in line.elements) {
+                                        val elementText = element.text
+                                        val elementCornerPoints = element.cornerPoints
+                                        val elementFrame = element.boundingBox
+                                    }
+                                }
+                            }
+                            Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
+                        }.addOnFailureListener {
+                            Toast.makeText(baseContext, "Fail Save", Toast.LENGTH_SHORT).show()
+                        }
                 }
             }
         )
@@ -156,5 +189,22 @@ class CameraActivity : AppCompatActivity() {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P)
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }.toTypedArray()
+    }
+}
+
+private class LuminosityAnalyzer(private val listener: LumaListener): ImageAnalysis.Analyzer{
+    private fun ByteBuffer.toByteArray(): ByteArray {
+        rewind()
+        val data = ByteArray(remaining())
+        get(data)
+        return data
+    }
+    override fun analyze(image: ImageProxy) {
+        val buffer = image.planes[0].buffer
+        val data = buffer.toByteArray()
+        val pixels = data.map { it.toInt() and 0xFF }
+        val luma = pixels.average()
+        listener(luma)
+        image.close()
     }
 }
