@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import android.Manifest
 import android.content.ContentValues
+import android.content.Intent
 import androidx.core.content.ContextCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -166,6 +167,7 @@ class CameraActivity : AppCompatActivity() {
                                 }
                             }
                             Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
+                            Log.d(TAG, resultText)
                         }.addOnFailureListener {
                             Toast.makeText(baseContext, "Fail Save", Toast.LENGTH_SHORT).show()
                         }
