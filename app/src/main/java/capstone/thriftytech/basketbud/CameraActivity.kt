@@ -27,10 +27,12 @@ import androidx.camera.core.Preview
 import androidx.camera.core.CameraSelector
 import android.util.Log
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
+import com.google.firebase.firestore.ktx.firestore
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -45,14 +47,12 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
     private val auth: FirebaseAuth = Firebase.auth
-    private lateinit var txtUser: TextView
     private var user: FirebaseUser? = null
-    private lateinit var drawer: DrawerLayout
-    private lateinit var actionBar: ActionBarDrawerToggle
-    private lateinit var navView: NavigationView
+    private val db = Firebase.firestore
     private lateinit var scanBtn: Button
     private var imgCapture: ImageCapture? = null
     private lateinit var camExecutor: ExecutorService
+
 
     //Checks for Permissions to use the Camera before starting
     private val activityResultLauncher =
@@ -150,7 +150,6 @@ class CameraActivity : AppCompatActivity() {
 
                     val result = recognizer.process(img)
                         .addOnSuccessListener {
-                            val resultText = it.text
                             for (block in it.textBlocks) {
                                 val blockText = block.text
                                 val blockCornerPoints = block.cornerPoints
@@ -167,7 +166,6 @@ class CameraActivity : AppCompatActivity() {
                                 }
                             }
                             Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
-                            Log.d(TAG, resultText)
                         }.addOnFailureListener {
                             Toast.makeText(baseContext, "Fail Save", Toast.LENGTH_SHORT).show()
                         }
