@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:contentDescription="Go To Camera Page"
-            android:src="@drawable/common_google_signin_btn_icon_light"
+            android:src="@drawable/common_full_open_on_phone"
             android:layout_centerInParent="true"
             android:layout_above="@id/bottom_navigation"
             android:layout_alignParentRight="true"

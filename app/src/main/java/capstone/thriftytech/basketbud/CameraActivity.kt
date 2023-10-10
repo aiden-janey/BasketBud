@@ -1,45 +1,41 @@
 package capstone.thriftytech.basketbud
 
+import android.Manifest
+import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.widget.TextView
+import android.util.Log
+import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
-import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.content.ContextCompat
+import capstone.thriftytech.basketbud.data.Product
+import capstone.thriftytech.basketbud.data.Store
+import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
+import capstone.thriftytech.basketbud.tools.StoreTools
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import android.Manifest
-import android.content.ContentValues
-import android.content.Intent
-import androidx.core.content.ContextCompat
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.core.Preview
-import androidx.camera.core.CameraSelector
-import android.util.Log
-import android.widget.Button
-import androidx.appcompat.app.AlertDialog
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
-import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -52,6 +48,7 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var scanBtn: Button
     private var imgCapture: ImageCapture? = null
     private lateinit var camExecutor: ExecutorService
+    private lateinit var storeTools: StoreTools
 
 
     //Checks for Permissions to use the Camera before starting
@@ -148,26 +145,35 @@ class CameraActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
 
-                    val result = recognizer.process(img)
+                    recognizer.process(img)
                         .addOnSuccessListener {
-                            for (block in it.textBlocks) {
-                                val blockText = block.text
-                                val blockCornerPoints = block.cornerPoints
-                                val blockFrame = block.boundingBox
-                                for (line in block.lines) {
-                                    val lineText = line.text
-                                    val lineCornerPoints = line.cornerPoints
-                                    val lineFrame = line.boundingBox
-                                    for (element in line.elements) {
-                                        val elementText = element.text
-                                        val elementCornerPoints = element.cornerPoints
-                                        val elementFrame = element.boundingBox
-                                    }
-                                }
-                            }
+                            Log.d("Receipt Data", it.text)
+                            val store = Store(
+                                storeTools.findAddress(it.text),//incomplete method
+                                storeTools.findCity(it.text),
+                                storeTools.findStore(it.text),
+                                storeTools.findProv(it.text)
+                            )
+
+
+//                            for (block in it.textBlocks) {
+//                                val blockText = block.text
+//                                val blockCornerPoints = block.cornerPoints
+//                                val blockFrame = block.boundingBox
+//                                for (line in block.lines) {
+//                                    val lineText = line.text
+//                                    val lineCornerPoints = line.cornerPoints
+//                                    val lineFrame = line.boundingBox
+//                                    for (element in line.elements) {
+//                                        val elementText = element.text
+//                                        val elementCornerPoints = element.cornerPoints
+//                                        val elementFrame = element.boundingBox
+//                                    }
+//                                }
+//                            }
                             Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
                         }.addOnFailureListener {
-                            Toast.makeText(baseContext, "Fail Save", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(baseContext, "Save Failed", Toast.LENGTH_SHORT).show()
                         }
                 }
             }

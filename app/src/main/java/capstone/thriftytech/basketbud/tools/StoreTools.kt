@@ -1,0 +1,37 @@
+package capstone.thriftytech.basketbud.tools
+
+class StoreTools {
+    val stores = arrayOf("GIANT TIGER", "METRO", "WALMART", "FOOD BASICS", "NO FRILLS")
+    val cities = arrayOf("BRAMPTON", "MISSISSAUGA", "TORONTO", "OAKVILLE", "HAMILTON")
+    val provinces = arrayOf("ON", "ONT")
+
+    fun findAddress(text: String): String{
+        var store_address = ""
+        //Find address in text
+        return store_address
+    }
+
+    fun findStore(text: String): String{
+        var store_name = ""
+        for(store in stores)
+            if(text.contains(store))
+                store_name = store
+        return store_name
+    }
+
+    fun findCity(text: String): String{
+        var store_city = ""
+        for(city in cities)
+            if(text.contains(city))
+                store_city = city
+        return store_city
+    }
+
+    fun findProv(text: String): String{
+        var store_prov = ""
+        for(prov in provinces)
+            if(text.contains(prov))
+                store_prov = prov
+        return store_prov
+    }
+}

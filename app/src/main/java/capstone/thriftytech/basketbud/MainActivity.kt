@@ -93,10 +93,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun logoutOfAcct() {
-        FirebaseAuth.getInstance().signOut()
         val intent = Intent(this, Login::class.java)
         startActivity(intent)
         finish()
+        FirebaseAuth.getInstance().signOut()
         Toast.makeText(this, "Successful Logout", Toast.LENGTH_SHORT).show()
     }
 }
