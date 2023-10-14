@@ -10,6 +10,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import capstone.thriftytech.basketbud.databinding.ActivityMainBinding
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -25,8 +26,8 @@ class MainActivity : AppCompatActivity() {
     private val auth: FirebaseAuth = Firebase.auth
     private lateinit var txtUser: TextView
     private var user: FirebaseUser? = null
-    private lateinit var drawer: DrawerLayout
-    private lateinit var actionBar: ActionBarDrawerToggle
+//    private lateinit var drawer: DrawerLayout
+//    private lateinit var actionBar: ActionBarDrawerToggle
     private lateinit var navView: NavigationView
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var scanBtn: FloatingActionButton
@@ -36,16 +37,20 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        bottomNavigationView = binding.bottomNavigationView
+        bottomNavigationView.background = null
+        bottomNavigationView.menu.getItem(2).isEnabled = false
+
 //        txtUser = binding.userDetails
         user = auth.currentUser
-        drawer = binding.drawLayout
-        actionBar = ActionBarDrawerToggle(this, drawer, R.string.nav_open, R.string.nav_close)
-        navView = binding.navView
+//        drawer = binding.drawLayout
+//        actionBar = ActionBarDrawerToggle(this, drawer, R.string.nav_open, R.string.nav_close)
+//        navView = binding.navView
         scanBtn = binding.scanBtn
-        bottomNavigationView = binding.bottomNavigation
 
-        drawer.addDrawerListener(actionBar)
-        actionBar.syncState()
+
+//        drawer.addDrawerListener(actionBar)
+//        actionBar.syncState()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -62,17 +67,17 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
-//        replaceFragment(HomeFragment())
-//
-//        bottomNavigationView.setOnItemSelectedListener {
-//            when (it.itemId) {
-//                R.id.home -> replaceFragment(HomeFragment())
-//                R.id.basket -> replaceFragment(BasketFragment())
-//                R.id.monthly_budget -> replaceFragment(MonthlyBudgetFragment())
-//                R.id.notification -> replaceFragment(NotificationFragment())
-//            }
-//            true
-//        }
+        replaceFragment(HomeFragment())
+
+        bottomNavigationView.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.home -> replaceFragment(HomeFragment())
+                R.id.basket -> replaceFragment(BasketFragment())
+                R.id.priceTracker -> replaceFragment(PriceTrackerFragment())
+                R.id.account -> replaceFragment(AccountFragment())
+            }
+            true
+        }
 
     }
 
@@ -83,14 +88,14 @@ class MainActivity : AppCompatActivity() {
         fragmentTransaction.commit()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        var result = if (actionBar.onOptionsItemSelected(item)) {
-            true
-        }else{
-            super.onOptionsItemSelected(item)
-        }
-        return result
-    }
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        var result = if (actionBar.onOptionsItemSelected(item)) {
+//            true
+//        }else{
+//            super.onOptionsItemSelected(item)
+//        }
+//        return result
+//    }
 
     private fun logoutOfAcct() {
         val intent = Intent(this, Login::class.java)

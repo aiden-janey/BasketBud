@@ -149,7 +149,7 @@ class CameraActivity : AppCompatActivity() {
                         .addOnSuccessListener {
                             Log.d("Receipt Data", it.text)
                             val store = Store(
-                                storeTools.findAddress(it.text),//incomplete method
+//                                storeTools.findAddress(it.text),//incomplete method
                                 storeTools.findCity(it.text),
                                 storeTools.findStore(it.text),
                                 storeTools.findProv(it.text)
