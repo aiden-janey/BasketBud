@@ -6,6 +6,7 @@ class Expense() {
     var purchaseTotal: Double? = null
     var store: String? = null
     var userId: String? = null
+
     init {
         imageUrl = "IMAGE_URL"
         purchaseDate = "99/99/9999"
