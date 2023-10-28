@@ -69,8 +69,6 @@ class CameraActivity : AppCompatActivity() {
     val storage = FirebaseStorage.getInstance()
     val storageReference = storage.reference
 
-    private var expense: Expense = Expense()
-
     //    private lateinit var storeTools: StoreTools
 
     //Checks for Permissions to use the Camera before starting
@@ -119,7 +117,7 @@ class CameraActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun uploadExpenseToFirebase() {
+    private fun uploadExpenseToFirebase(expense: Expense) {
         val expensesCollection = db.collection("expenses")
 8
         // Add a new document with a generated ID
@@ -175,7 +173,7 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun uploadImageToFirebase(imageUri: Uri) {
+    private fun uploadImageToFirebase(imageUri: Uri, userID: String) {
         val imageRef = storageReference.child("receipts/${imageUri.lastPathSegment}")
         val uploadTask = imageRef.putFile(imageUri)
 
@@ -186,8 +184,17 @@ class CameraActivity : AppCompatActivity() {
                 val downloadUrl = uri.toString()
                 // Handle successful upload
                 Log.d(TAG, "ImageURL: $downloadUrl")
-                expense.imageUrl = downloadUrl
-                uploadExpenseToFirebase()
+
+                // Create an Expense object
+                val expense = Expense(
+                    imageUrl = downloadUrl,
+                    store = "NO FRILLS",
+                    purchaseDate = "04/12/2023",
+                    purchaseTotal = 24.06,
+                    userID = userID
+                )
+
+                uploadExpenseToFirebase(expense)
             }
         }.addOnFailureListener {
             // Handle unsuccessful upload
@@ -242,14 +249,9 @@ class CameraActivity : AppCompatActivity() {
                     imagePreview.setImageBitmap(rotatedBitmap)
                     confirmButton.visibility = View.VISIBLE
 
-                    //load expense, waiting for text extract to plug in here
-                    expense.store = "NO FRILLS"
-                    expense.purchaseDate = "04/12/2023"
-                    expense.purchaseTotal = 24.06
-                    expense.userId = auth.uid
-
                     confirmButton.setOnClickListener {
-                        uploadImageToFirebase(savedUri)
+                        uploadImageToFirebase(savedUri, auth.currentUser!!.uid)
+                        Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
                         navigateToHome()
                     }
 
