@@ -1,13 +1,16 @@
 package capstone.thriftytech.basketbud.tools
 
 class StoreTools {
+    val addresses = arrayOf("499 MAIN STREET SOUTH")
     val stores = arrayOf("GIANT TIGER", "METRO", "WALMART", "FOOD BASICS", "NO FRILLS")
     val cities = arrayOf("BRAMPTON", "MISSISSAUGA", "TORONTO", "OAKVILLE", "HAMILTON")
     val provinces = arrayOf("ON", "ONT")
 
     fun findAddress(text: String): String{
         var store_address = ""
-        //Find address in text
+        for(addr in addresses)
+            if(text.contains(addr))
+                store_address = addr
         return store_address
     }
 

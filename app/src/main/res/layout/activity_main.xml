@@ -40,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="Go To Camera Page"
-        android:src="@drawable/common_full_open_on_phone"
+        android:src="@drawable/take_pic_logo"
         app:layout_anchor="@id/bottom_app_bar"
         style="@style/Widget.MaterialComponents.Chip.Action"/>
 

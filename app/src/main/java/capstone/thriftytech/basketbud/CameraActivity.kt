@@ -2,6 +2,7 @@ package capstone.thriftytech.basketbud
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -22,6 +23,7 @@ import androidx.core.content.ContextCompat
 import capstone.thriftytech.basketbud.data.Product
 import capstone.thriftytech.basketbud.data.Store
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
+import capstone.thriftytech.basketbud.tools.ProductTools
 import capstone.thriftytech.basketbud.tools.StoreTools
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -49,6 +51,7 @@ class CameraActivity : AppCompatActivity() {
     private var imgCapture: ImageCapture? = null
     private lateinit var camExecutor: ExecutorService
     private lateinit var storeTools: StoreTools
+    private lateinit var productTools: ProductTools
 
 
     //Checks for Permissions to use the Camera before starting
@@ -149,31 +152,35 @@ class CameraActivity : AppCompatActivity() {
                         .addOnSuccessListener {
                             Log.d("Receipt Data", it.text)
                             val store = Store(
-//                                storeTools.findAddress(it.text),//incomplete method
+                                storeTools.findAddress(it.text),
                                 storeTools.findCity(it.text),
                                 storeTools.findStore(it.text),
                                 storeTools.findProv(it.text)
                             )
+                            val date = productTools.findDate(it.text)
+                            val userId = if(auth.currentUser != null){
+                                auth.currentUser
+                            }else{
+                                "No User Found"
+                            }
 
-
-//                            for (block in it.textBlocks) {
-//                                val blockText = block.text
-//                                val blockCornerPoints = block.cornerPoints
-//                                val blockFrame = block.boundingBox
-//                                for (line in block.lines) {
-//                                    val lineText = line.text
-//                                    val lineCornerPoints = line.cornerPoints
-//                                    val lineFrame = line.boundingBox
-//                                    for (element in line.elements) {
-//                                        val elementText = element.text
-//                                        val elementCornerPoints = element.cornerPoints
-//                                        val elementFrame = element.boundingBox
-//                                    }
-//                                }
-//                            }
+                            for (block in it.textBlocks) {
+                                for (line in block.lines) {
+                                    val lineText = line.text
+                                    val product = Product(
+                                        productTools.findDate(lineText),
+                                        productTools.findName(lineText),
+                                        productTools.findPrice(lineText),
+                                        getStoreId(store),
+                                        auth.currentUser
+                                    )
+                                }
+                            }
                             Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
+                            goToMain()
                         }.addOnFailureListener {
                             Toast.makeText(baseContext, "Save Failed", Toast.LENGTH_SHORT).show()
+                            goToMain()
                         }
                 }
             }
@@ -183,6 +190,35 @@ class CameraActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         camExecutor.shutdown()
+    }
+
+    private fun goToMain(){
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun addStore(store: Store){
+        db.collection("stores").add(store).addOnSuccessListener {
+            Toast.makeText(this, "${store.store_name} is Added.", Toast.LENGTH_SHORT)
+        }.addOnFailureListener {
+            Toast.makeText(this, "Unable to add ${store.store_name}.", Toast.LENGTH_SHORT)
+        }
+    }
+
+    private fun getStoreId(store: Store): Any{
+        db.collection("stores").whereEqualTo("store_name", store.store_name).get().addOnSuccessListener {
+            //get id
+        }
+
+    }
+
+    private fun addProduct(product: Product){
+        db.collection("products").add(product).addOnSuccessListener {
+            Toast.makeText(this, "${product.prod_name} is Added.", Toast.LENGTH_SHORT)
+        }.addOnFailureListener {
+            Toast.makeText(this, "Unable to add ${product.prod_name}.", Toast.LENGTH_SHORT)
+        }
     }
 
     companion object {
