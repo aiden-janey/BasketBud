@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import capstone.thriftytech.basketbud.data.BasketItem
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import capstone.thriftytech.basketbud.databinding.FragmentBasketBinding
@@ -51,6 +52,7 @@ class BasketFragment : Fragment() {
                 adapter.submitList(it)
             }
         }
+        binding.recyclerView.layoutManager = LinearLayoutManager(this.context)
         //add item to database
         binding.itemAdd.setOnClickListener {
             if (viewModel.isEntryValid(binding.addItemTextView.text.toString())) {
