@@ -39,7 +39,6 @@ class BasketListAdapter(private val onItemClicked: (BasketItem) -> Unit) : ListA
             override fun areItemsTheSame(oldItem: BasketItem, newItem: BasketItem): Boolean {
                 return oldItem === newItem
             }
-
             override fun areContentsTheSame(oldItem: BasketItem, newItem: BasketItem): Boolean {
                 return oldItem.itemName == newItem.itemName
             }
