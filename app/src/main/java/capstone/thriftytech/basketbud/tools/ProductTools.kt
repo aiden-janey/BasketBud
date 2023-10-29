@@ -22,10 +22,10 @@ class ProductTools {
     }
 
     fun findPrice(line: String): String{
-
+        return "0.00"
     }
 
     fun findName(line: String): String{
-
+        return "product brand"
     }
 }

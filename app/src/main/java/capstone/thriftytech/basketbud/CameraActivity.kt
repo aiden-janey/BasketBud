@@ -172,7 +172,7 @@ class CameraActivity : AppCompatActivity() {
                                         productTools.findName(lineText),
                                         productTools.findPrice(lineText),
                                         getStoreId(store),
-                                        auth.currentUser
+                                        userId.toString()
                                     )
                                 }
                             }
@@ -206,10 +206,11 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    private fun getStoreId(store: Store): Any{
+    fun getStoreId(store: Store): String{
         db.collection("stores").whereEqualTo("store_name", store.store_name).get().addOnSuccessListener {
             //get id
         }
+        return "store123"
 
     }
 
