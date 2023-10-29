@@ -62,4 +62,12 @@ dependencies {
     implementation ("androidx.camera:camera-extensions:1.2.3")
     implementation ("com.google.mlkit:text-recognition:16.0.0")
     implementation ("com.squareup.picasso:picasso:2.8")
+
+    // Room Libary for shopping list items
+    implementation ("androidx.room:room-runtime:2.6.0")
+    implementation ("androidx.room:room-ktx:2.6.0")
+
+    // Lifecycle libraries
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
 }
