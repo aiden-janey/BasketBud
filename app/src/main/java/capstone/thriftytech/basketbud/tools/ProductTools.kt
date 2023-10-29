@@ -22,10 +22,19 @@ class ProductTools {
     }
 
     fun findPrice(line: String): String{
-        return "0.00"
+        var price = "0.00"
+        if(line.contains(pricePattern)){
+            price = pricePattern.find(line).toString()
+        }
+        return price
     }
 
     fun findName(line: String): String{
-        return "product brand"
+        var prodName = "No Product Found"
+        var price = ""
+        if(line.contains(pricePattern)){
+            prodName = line.substring(0, (line.length-5))
+        }
+        return prodName
     }
 }

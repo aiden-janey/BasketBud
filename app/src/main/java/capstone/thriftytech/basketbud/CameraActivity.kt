@@ -157,7 +157,9 @@ class CameraActivity : AppCompatActivity() {
                                 storeTools.findStore(it.text),
                                 storeTools.findProv(it.text)
                             )
-                            val date = productTools.findDate(it.text)
+
+                            addStore(store)
+                            
                             val userId = if(auth.currentUser != null){
                                 auth.currentUser
                             }else{
@@ -211,7 +213,6 @@ class CameraActivity : AppCompatActivity() {
             //get id
         }
         return "store123"
-
     }
 
     private fun addProduct(product: Product){
