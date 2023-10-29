@@ -35,4 +35,8 @@ class BasketItemViewModel(private val basketItemDao: BasketItemDao) : ViewModel(
             basketItemDao.delete(basketItem)
         }
     }
+    //check valid entries
+    fun isEntryValid(itemName: String): Boolean {
+        return !itemName.isBlank()
+    }
 }
