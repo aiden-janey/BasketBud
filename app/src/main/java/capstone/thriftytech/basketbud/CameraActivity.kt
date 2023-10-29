@@ -45,7 +45,6 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
     private val auth: FirebaseAuth = Firebase.auth
-    private var user: FirebaseUser? = null
     private val db = Firebase.firestore
     private lateinit var scanBtn: Button
     private var imgCapture: ImageCapture? = null
@@ -158,8 +157,9 @@ class CameraActivity : AppCompatActivity() {
                                 storeTools.findProv(it.text)
                             )
 
+                            var date = "2023/10/29"
                             addStore(store)
-                            
+
                             val userId = if(auth.currentUser != null){
                                 auth.currentUser
                             }else{
@@ -169,13 +169,15 @@ class CameraActivity : AppCompatActivity() {
                             for (block in it.textBlocks) {
                                 for (line in block.lines) {
                                     val lineText = line.text
+                                    date = productTools.findDate(lineText)
                                     val product = Product(
-                                        productTools.findDate(lineText),
+                                        date,
                                         productTools.findName(lineText),
                                         productTools.findPrice(lineText),
                                         getStoreId(store),
                                         userId.toString()
                                     )
+                                    addProduct(product)
                                 }
                             }
                             Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
