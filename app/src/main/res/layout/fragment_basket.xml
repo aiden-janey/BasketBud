@@ -12,12 +12,12 @@
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
-            android:layout_height="49dp"
+            android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
             <Toolbar
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:contentInsetStart="0dp"
                 android:contentInsetLeft="0dp"
                 app:contentInsetLeft="0dp"
@@ -48,7 +48,7 @@
             android:layout_width="267dp"
             android:layout_height="59dp"
             android:layout_marginTop="64dp"
-            android:text="AutoCompleteTextView"
+            android:text=""
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.111"
             app:layout_constraintStart_toStartOf="parent"
@@ -68,8 +68,8 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
-            android:layout_width="410dp"
-            android:layout_height="574dp"
+            android:layout_width="411dp"
+            android:layout_height="433dp"
             android:layout_marginTop="40dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"

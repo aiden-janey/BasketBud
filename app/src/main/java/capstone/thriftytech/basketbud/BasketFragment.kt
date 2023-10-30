@@ -6,10 +6,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import capstone.thriftytech.basketbud.data.BasketItem
+import capstone.thriftytech.basketbud.data.BasketListBank
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import capstone.thriftytech.basketbud.databinding.FragmentBasketBinding
 import com.google.firebase.auth.ktx.auth
@@ -24,6 +26,9 @@ class BasketFragment : Fragment() {
             (activity?.application as BasketItemApplication).database.basketItemDao()
         )
     }
+    //initialize work bank array
+    var basketListBank = BasketListBank().listArray
+
     //initialize view binding for Basket Fragment
     private var _binding: FragmentBasketBinding? = null
     private val binding get() = _binding!!
@@ -40,16 +45,16 @@ class BasketFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         showUserName()
-        //initialize adpater
-        val adapter = BasketListAdapter {
+        //initialize recyclerView adpater
+        val listAdapter = BasketListAdapter {
             Log.d("onClick", it.itemName + " clicked")
         }
         //build recycler list items
-        binding.recyclerView.adapter = adapter
+        binding.recyclerView.adapter = listAdapter
         //use observable list for change in data
         viewModel.allItems.observe(this.viewLifecycleOwner) { items ->
             items.let {
-                adapter.submitList(it)
+                listAdapter.submitList(it)
             }
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(this.context)
@@ -57,8 +62,18 @@ class BasketFragment : Fragment() {
         binding.itemAdd.setOnClickListener {
             if (viewModel.isEntryValid(binding.addItemTextView.text.toString())) {
                 viewModel.insertItem(BasketItem(0, binding.addItemTextView.text.toString()))
+                //reset textview
+                binding.addItemTextView.text.clear()
             }
         }
+        //adapter for autocomplete
+        val bankAdapter = ArrayAdapter(
+            requireContext(),
+            androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
+            basketListBank
+        )
+        val textView = binding.addItemTextView
+        textView.setAdapter(bankAdapter)
     }
 
     private fun showUserName() {
