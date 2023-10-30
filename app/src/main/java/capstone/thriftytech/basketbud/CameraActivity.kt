@@ -297,6 +297,35 @@ class CameraActivity : AppCompatActivity() {
         camExecutor.shutdown()
     }
 
+    private fun goToMain(){
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun addStore(store: Store){
+        db.collection("stores").add(store).addOnSuccessListener {
+            Toast.makeText(this, "${store.store_name} is Added.", Toast.LENGTH_SHORT)
+        }.addOnFailureListener {
+            Toast.makeText(this, "Unable to add ${store.store_name}.", Toast.LENGTH_SHORT)
+        }
+    }
+
+    fun getStoreId(store: Store): String{
+        db.collection("stores").whereEqualTo("store_name", store.store_name).get().addOnSuccessListener {
+            //get id
+        }
+        return "store123"
+    }
+
+    private fun addProduct(product: Product){
+        db.collection("products").add(product).addOnSuccessListener {
+            Toast.makeText(this, "${product.prod_name} is Added.", Toast.LENGTH_SHORT)
+        }.addOnFailureListener {
+            Toast.makeText(this, "Unable to add ${product.prod_name}.", Toast.LENGTH_SHORT)
+        }
+    }
+
     companion object {
         private const val TAG = "BasketBud"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
