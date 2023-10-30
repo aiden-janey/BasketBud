@@ -16,11 +16,12 @@
         android:id="@+id/backButton"
         android:layout_width="64dp"
         android:layout_height="64dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
         android:background="@drawable/baseline_close_24"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"/>
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <ImageView
         android:id="@+id/imagePreview"
@@ -37,18 +38,26 @@
         android:elevation="2dp"
         android:text="Scan Receipt"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"/>
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/vertical_centerline"/>
 
     <Button
         android:id="@+id/confirmButton"
         android:layout_width="110dp"
         android:layout_height="110dp"
         android:layout_marginBottom="50dp"
+        android:layout_marginStart="50dp"
         android:elevation="2dp"
         android:text="Confirm Receipt"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:visibility="gone"/>
+        app:layout_constraintStart_toEndOf="@id/vertical_centerline"/>
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/vertical_centerline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".50" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
