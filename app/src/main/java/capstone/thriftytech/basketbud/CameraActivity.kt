@@ -9,11 +9,14 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.content.ContentValues
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -21,6 +24,10 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
+import capstone.thriftytech.basketbud.data.Product
+import capstone.thriftytech.basketbud.data.Store
+import capstone.thriftytech.basketbud.tools.ProductTools
+import capstone.thriftytech.basketbud.tools.StoreTools
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -29,9 +36,11 @@ import androidx.exifinterface.media.ExifInterface
 import capstone.thriftytech.basketbud.data.Expense
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -41,16 +50,24 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.io.File
+import com.google.mlkit.vision.common.InputImage
+import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 typealias LumaListener = (luma: Double) -> Unit
 
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
-
-    // UI's set up
+    private val auth: FirebaseAuth = Firebase.auth
+    private val db = Firebase.firestore
     private lateinit var scanBtn: Button
     private var imgCapture: ImageCapture? = null
+    private lateinit var camExecutor: ExecutorService
+    private lateinit var storeTools: StoreTools
+    private lateinit var productTools: ProductTools
+    
     private lateinit var confirmButton: Button
     private lateinit var imagePreview: ImageView
     private lateinit var viewFinder: PreviewView
@@ -58,12 +75,11 @@ class CameraActivity : AppCompatActivity() {
 
     // Set up the camera
     private lateinit var outputDirectory: File
-    private lateinit var camExecutor: ExecutorService
-
-    private val auth: FirebaseAuth = Firebase.auth
+    
+   
 
     // Initialize FirebaseFirestore
-    private val db = FirebaseFirestore.getInstance()
+    //private val db = FirebaseFirestore.getInstance()
 
     // Initialize FirebaseStorage
     val storage = FirebaseStorage.getInstance()
@@ -103,12 +119,13 @@ class CameraActivity : AppCompatActivity() {
             activityResultLauncher.launch(REQUIRED_PERMISSIONS)
 
         outputDirectory = getOutputDirectory()
-        camExecutor = Executors.newSingleThreadExecutor()
 
         scanBtn.setOnClickListener { scanReceipt() }
         backButton.setOnClickListener {
             navigateToHome()
         }
+        
+        camExecutor = Executors.newSingleThreadExecutor() 
     }
 
     private fun navigateToHome() {
@@ -223,15 +240,45 @@ class CameraActivity : AppCompatActivity() {
 
         val photoFile = File(outputDirectory, "$name.jpg")
 
-//        val contentValues = ContentValues().apply {
-//            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-//            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-//            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P)
-//                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-//        }
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P)
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+        }
 
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+        //val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
+        val outputOptions = ImageCapture.OutputFileOptions
+            .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            .build()
+        
+
+        // imageCapture.takePicture(
+        //     outputOptions,
+        //     ContextCompat.getMainExecutor(this),
+        //     object : ImageCapture.OnImageSavedCallback {
+        //         override fun onError(err: ImageCaptureException) {
+        //             Log.e(TAG, "Photo capture failed: ${err.message}", err)
+        //         }
+        //         override fun onImageSaved(output: ImageCapture.OutputFileResults){
+        //             val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+        //             val takenImageBitMap = BitmapFactory.decodeFile(photoFile.absolutePath)
+        //             val rotatedBitmap = rotateBitmap(takenImageBitMap, photoFile)
+        //             viewFinder.visibility = View.GONE
+        //             scanBtn.visibility = View.GONE
+        //             imagePreview.visibility = View.VISIBLE
+        //             imagePreview.setImageBitmap(rotatedBitmap)
+        //             confirmButton.visibility = View.VISIBLE
+
+        //             confirmButton.setOnClickListener {
+        //                 uploadImageToFirebase(savedUri, auth.currentUser!!.uid)
+        //                 Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
+        //                 navigateToHome()
+        //             }
+        //         }
+        //     }
+        // )
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -240,53 +287,47 @@ class CameraActivity : AppCompatActivity() {
                     Log.e(TAG, "Photo capture failed: ${err.message}", err)
                 }
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                    val takenImageBitMap = BitmapFactory.decodeFile(photoFile.absolutePath)
-                    val rotatedBitmap = rotateBitmap(takenImageBitMap, photoFile)
-                    viewFinder.visibility = View.GONE
-                    scanBtn.visibility = View.GONE
-                    imagePreview.visibility = View.VISIBLE
-                    imagePreview.setImageBitmap(rotatedBitmap)
-                    confirmButton.visibility = View.VISIBLE
+                    val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
 
-                    confirmButton.setOnClickListener {
-                        uploadImageToFirebase(savedUri, auth.currentUser!!.uid)
-                        Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
-                        navigateToHome()
-                    }
+                    recognizer.process(img)
+                        .addOnSuccessListener {
+                            Log.d("Receipt Data", it.text)
+                            val store = Store(
+                                storeTools.findAddress(it.text),
+                                storeTools.findCity(it.text),
+                                storeTools.findStore(it.text),
+                                storeTools.findProv(it.text)
+                            )
 
-//                    val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
-//
-//                    recognizer.process(img)
-//                        .addOnSuccessListener {
-//                            Log.d("Receipt Data", it.text)
-//                            val store = Store(
-////                                storeTools.findAddress(it.text),//incomplete method
-////                                storeTools.findCity(it.text),
-////                                storeTools.findStore(it.text),
-////                                storeTools.findProv(it.text)
-//                            )
-//
-//
-////                            for (block in it.textBlocks) {
-////                                val blockText = block.text
-////                                val blockCornerPoints = block.cornerPoints
-////                                val blockFrame = block.boundingBox
-////                                for (line in block.lines) {
-////                                    val lineText = line.text
-////                                    val lineCornerPoints = line.cornerPoints
-////                                    val lineFrame = line.boundingBox
-////                                    for (element in line.elements) {
-////                                        val elementText = element.text
-////                                        val elementCornerPoints = element.cornerPoints
-////                                        val elementFrame = element.boundingBox
-////                                    }
-////                                }
-////                            }
-//                            Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
-//                        }.addOnFailureListener {
-//                            Toast.makeText(baseContext, "Save Failed", Toast.LENGTH_SHORT).show()
-//                        }
+                            var date = "2023/10/29"
+                            addStore(store)
+
+                            val userId = if(auth.currentUser != null){
+                                auth.currentUser
+                            }else{
+                                "No User Found"
+                            }
+
+                            for (block in it.textBlocks) {
+                                for (line in block.lines) {
+                                    val lineText = line.text
+                                    date = productTools.findDate(lineText)
+                                    val product = Product(
+                                        date,
+                                        productTools.findName(lineText),
+                                        productTools.findPrice(lineText),
+                                        getStoreId(store),
+                                        userId.toString()
+                                    )
+                                    addProduct(product)
+                                }
+                            }
+                            Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
+                            goToMain()
+                        }.addOnFailureListener {
+                            Toast.makeText(baseContext, "Save Failed", Toast.LENGTH_SHORT).show()
+                            goToMain()
+                        }
                 }
             }
         )
