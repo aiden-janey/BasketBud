@@ -309,7 +309,7 @@ class CameraActivity : AppCompatActivity() {
                             addStore(store)
 
                             val userId = if(auth.currentUser != null){
-                                auth.currentUser
+                                auth.currentUser!!.uid
                             }else{
                                 "No User Found"
                             }
@@ -317,13 +317,15 @@ class CameraActivity : AppCompatActivity() {
                             for (block in it.textBlocks) {
                                 for (line in block.lines) {
                                     val lineText = line.text
+                                    if(lineText.equals("SUBTOTAL", true))
+                                        break
                                     date = productTools.findDate(lineText)
                                     val product = Product(
                                         date,
                                         productTools.findName(lineText),
                                         productTools.findPrice(lineText),
                                         getStoreId(store),
-                                        userId.toString()
+                                        userId
                                     )
                                     addProduct(product)
                                 }
@@ -352,10 +354,11 @@ class CameraActivity : AppCompatActivity() {
     }
 
     fun getStoreId(store: Store): String{
+        var storeId = "No StoreID Found"
         db.collection("stores").whereEqualTo("store_name", store.store_name).get().addOnSuccessListener {
             //get id
         }
-        return "store123"
+        return storeId
     }
 
     private fun addProduct(product: Product){

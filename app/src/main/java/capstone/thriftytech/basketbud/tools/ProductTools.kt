@@ -15,6 +15,7 @@ class ProductTools {
             if(line.contains(month))
                 buy_date = line
             else{
+                //Assume Current Date & Time
                 var date = Date()
                 buy_date = format.format(date).toString()
             }
@@ -22,7 +23,7 @@ class ProductTools {
     }
 
     fun findPrice(line: String): String{
-        var price = "0.00"
+        var price = "No Price Found"
         if(line.contains(pricePattern)){
             price = pricePattern.find(line).toString()
         }
