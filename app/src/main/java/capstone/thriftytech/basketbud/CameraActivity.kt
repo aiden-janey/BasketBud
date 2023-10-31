@@ -48,6 +48,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.io.File
 import com.google.mlkit.vision.common.InputImage
+
 typealias LumaListener = (luma: Double) -> Unit
 
 class CameraActivity : AppCompatActivity() {
@@ -119,7 +120,7 @@ class CameraActivity : AppCompatActivity() {
 
     private fun uploadExpenseToFirebase(expense: Expense) {
         val expensesCollection = db.collection("expenses")
-8
+
         // Add a new document with a generated ID
         expensesCollection
             .add(expense)
@@ -165,7 +166,7 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun uploadImageToFirebase(imageUri: Uri, userID: String) {
+    private fun uploadImageToFirebase(imageUri: Uri, expense: Expense) {
         val imageRef = storageReference.child("receipts/${imageUri.lastPathSegment}")
         val uploadTask = imageRef.putFile(imageUri)
 
@@ -178,15 +179,15 @@ class CameraActivity : AppCompatActivity() {
                 Log.d(TAG, "ImageURL: $downloadUrl")
 
                 // Create an Expense object
-                val expense = Expense(
+                val thisExpense = Expense(
                     imageUrl = downloadUrl,
-                    store = "NO FRILLS",
-                    purchaseDate = "05/07/2023",
-                    purchaseTotal = 7.49,
-                    userID = userID
+                    purchaseDate = expense.purchaseDate,
+                    purchaseTotal = expense.purchaseTotal,
+                    store = expense.store,
+                    userID = expense.userID
                 )
 
-                uploadExpenseToFirebase(expense)
+                uploadExpenseToFirebase(thisExpense)
             }
         }.addOnFailureListener {
             // Handle unsuccessful upload
@@ -246,16 +247,22 @@ class CameraActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     //Text Extract
                     val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
+                    var expense = Expense("image_url", "puchase_date", 0.0, "store_name", "user_ID")
 
                     recognizer.process(img)
                         .addOnSuccessListener {
                             Log.d("Receipt Data", it.text)
+                            val text = it.text
+                            var purchaseDate = ""
+
                             val store = Store(
                                 storeTools.findAddress(it.text),
                                 storeTools.findCity(it.text),
                                 storeTools.findStore(it.text),
                                 storeTools.findProv(it.text)
                             )
+
+                            val storeName = store.store_name.toString()
 
                             var date = "2023/10/29"
                             addStore(store)
@@ -279,9 +286,33 @@ class CameraActivity : AppCompatActivity() {
                                         getStoreId(store),
                                         userId
                                     )
+
+                                    purchaseDate = product.buy_date.toString()
                                     addProduct(product)
                                 }
                             }
+
+                            //Expense Tracking
+                            var totalPattern = Regex("""(\d+\.\s?\d{2}) CAD""") // Total amount pattern "(xx.xx CAD)"
+                            var totalMatch = totalPattern.find(text)?.groups?.get(1)?.value
+
+                            if (totalMatch == null){
+                                totalPattern = Regex("""CAD\$\s?(\d+\.\s?\d+)""")// Total amount pattern "(CAD$ xx.xx)"
+                            }
+
+                            totalMatch = totalPattern.find(text)?.groups?.get(1)?.value
+
+                            Log.d("Puchase Total Captured", "Captured: $totalMatch")
+
+                            val purchaseTotal = totalMatch?.replace("CAD", "")?.replace(" ", "")?.toDouble()
+
+                            expense = Expense("image_url", purchaseDate, purchaseTotal, storeName,auth.currentUser!!.uid)
+//                            Log.d("Receipt Data", "Store Name: $storeName")
+//                            Log.d("Receipt Data", "Purchase Date: $purchaseDate")
+//                            Log.d("Receipt Data", "Purchase Total: $purchaseTotal")
+
+                            Log.d("Expense Data", "Expense Data (In Text Reco) $expense")
+
                             Log.d(TAG, "Receipt Data Stored")
                         }.addOnFailureListener {
                             Log.d(TAG, "Can't Store Receipt Data")
@@ -303,7 +334,8 @@ class CameraActivity : AppCompatActivity() {
                     confirmButton.visibility = View.VISIBLE
 
                     confirmButton.setOnClickListener {
-                        uploadImageToFirebase(savedUri, auth.currentUser!!.uid)
+                        Log.d("Expense Data", "Expense Data (before Upload) $expense")
+                        uploadImageToFirebase(savedUri, expense)
                         Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
                         navigateToHome()
                     }

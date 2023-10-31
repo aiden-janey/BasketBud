@@ -82,7 +82,7 @@ class HomeFragment : Fragment() {
             }
 
             if(expenseList.isEmpty()) {
-                noReceiptTV.visibility = View.GONE
+                noReceiptTV.visibility = View.VISIBLE
             }
             else {
                 val adapter = ExpenseAdapter(expenseList)
