@@ -1,21 +1,25 @@
 package capstone.thriftytech.basketbud
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import capstone.thriftytech.basketbud.data.BasketItem
 import capstone.thriftytech.basketbud.data.BasketListBank
-import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import capstone.thriftytech.basketbud.databinding.FragmentBasketBinding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+
 
 class BasketFragment : Fragment() {
     //private lateinit var binding: ActivityCameraBinding
@@ -47,7 +51,8 @@ class BasketFragment : Fragment() {
         showUserName()
         //initialize recyclerView adpater
         val listAdapter = BasketListAdapter {
-            Log.d("onClick", it.itemName + " clicked")
+            //Log.d("onClick", it.itemName + " clicked")
+            //viewModel.deleteItem(it)
         }
         //build recycler list items
         binding.recyclerView.adapter = listAdapter

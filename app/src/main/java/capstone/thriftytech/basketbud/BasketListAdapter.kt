@@ -1,5 +1,6 @@
 package capstone.thriftytech.basketbud
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import capstone.thriftytech.basketbud.data.BasketItem
 import capstone.thriftytech.basketbud.databinding.BasketListItemBinding
+
 
 //adapter class for recyclerView
 class BasketListAdapter(private val onItemClicked: (BasketItem) -> Unit) : ListAdapter<BasketItem, BasketListAdapter.BasketItemViewHolder>(DiffCallback) {
@@ -21,6 +23,11 @@ class BasketListAdapter(private val onItemClicked: (BasketItem) -> Unit) : ListA
         val current = getItem(position)
         holder.itemView.setOnClickListener {
             onItemClicked(current)
+            Log.d("Pos", "selected: + $holder.adapterPosition")
+        }
+        holder.itemView.setOnLongClickListener {
+            onItemClicked(current)
+            return@setOnLongClickListener true
         }
         holder.bind(current)
     }
