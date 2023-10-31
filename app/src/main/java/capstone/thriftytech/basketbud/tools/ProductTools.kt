@@ -6,7 +6,7 @@ import java.util.Date
 class ProductTools {
     val months = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
         "Aug", "Sep", "Oct", "Nov", "Dec")
-    val pricePattern = Regex(pattern = "[0-9][0-9].[0-9][0-9]")
+    val pricePattern = Regex("""(\d+\.\s?\d{2}) CAD""")
 
     fun findDate(line: String): String{
         var buy_date = ""
