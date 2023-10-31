@@ -35,9 +35,7 @@ import androidx.exifinterface.media.ExifInterface
 import capstone.thriftytech.basketbud.data.Expense
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.storage.FirebaseStorage
@@ -50,7 +48,6 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.io.File
 import com.google.mlkit.vision.common.InputImage
-
 typealias LumaListener = (luma: Double) -> Unit
 
 class CameraActivity : AppCompatActivity() {
@@ -68,14 +65,6 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var imagePreview: ImageView
     private lateinit var viewFinder: PreviewView
     private lateinit var backButton: Button
-
-    // Set up the camera
-    private lateinit var outputDirectory: File
-    
-   
-
-    // Initialize FirebaseFirestore
-    //private val db = FirebaseFirestore.getInstance()
 
     // Initialize FirebaseStorage
     val storage = FirebaseStorage.getInstance()
@@ -113,10 +102,8 @@ class CameraActivity : AppCompatActivity() {
         else
             activityResultLauncher.launch(REQUIRED_PERMISSIONS)
 
-        outputDirectory = getOutputDirectory()
-
         scanBtn.setOnClickListener { scanReceipt() }
-        confirmButton.setOnClickListener { confirmReceipt() }
+
         backButton.setOnClickListener {
             navigateToHome()
         }
@@ -144,14 +131,6 @@ class CameraActivity : AppCompatActivity() {
                 // Error adding document
                 println("Error adding expense: $e")
             }
-    }
-
-    private fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
-        }
-        return if (mediaDir != null && mediaDir.exists())
-            mediaDir else filesDir
     }
 
     private fun permissionsGranted() = REQUIRED_PERMISSIONS.all{
@@ -202,8 +181,8 @@ class CameraActivity : AppCompatActivity() {
                 val expense = Expense(
                     imageUrl = downloadUrl,
                     store = "NO FRILLS",
-                    purchaseDate = "04/12/2023",
-                    purchaseTotal = 24.06,
+                    purchaseDate = "05/07/2023",
+                    purchaseTotal = 7.49,
                     userID = userID
                 )
 
@@ -228,42 +207,16 @@ class CameraActivity : AppCompatActivity() {
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
-
-    private fun confirmReceipt(){
-        val imageCapture = imgCapture ?: return
-
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
-
-        val photoFile = File(outputDirectory, "$name.jpg")
-
-
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-         imageCapture.takePicture(
-             outputOptions,
-             ContextCompat.getMainExecutor(this),
-             object : ImageCapture.OnImageSavedCallback {
-                 override fun onError(err: ImageCaptureException) {
-                     Log.e(TAG, "Photo capture failed: ${err.message}", err)
-                 }
-                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                     val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                     val takenImageBitMap = BitmapFactory.decodeFile(photoFile.absolutePath)
-                     val rotatedBitmap = rotateBitmap(takenImageBitMap, photoFile)
-                     viewFinder.visibility = View.GONE
-                     scanBtn.visibility = View.GONE
-                     imagePreview.visibility = View.VISIBLE
-                     imagePreview.setImageBitmap(rotatedBitmap)
-                     confirmButton.visibility = View.VISIBLE
-
-                     confirmButton.setOnClickListener {
-                         uploadImageToFirebase(savedUri, auth.currentUser!!.uid)
-                         Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
-                         navigateToHome()
-                     }
-                 }
-             }
-         )
+    private fun getRealPathFromURI(uri: Uri): String {
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, projection, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                return it.getString(columnIndex)
+            }
+        }
+        return uri.path ?: ""
     }
 
     private fun scanReceipt() {
@@ -271,8 +224,6 @@ class CameraActivity : AppCompatActivity() {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
-
-        val photoFile = File(outputDirectory, "$name.jpg")
 
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
@@ -293,6 +244,7 @@ class CameraActivity : AppCompatActivity() {
                     Log.e(TAG, "Photo capture failed: ${err.message}", err)
                 }
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
+                    //Text Extract
                     val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
 
                     recognizer.process(img)
@@ -331,10 +283,30 @@ class CameraActivity : AppCompatActivity() {
                                 }
                             }
                             Log.d(TAG, "Receipt Data Stored")
-                            navigateToHome()
                         }.addOnFailureListener {
                             Log.d(TAG, "Can't Store Receipt Data")
                         }
+
+                    //Confirm Receipt
+                    val savedUri = output.savedUri!!
+
+                    val imageFile = File(getRealPathFromURI(savedUri))
+                    val takenImageBitMap = BitmapFactory.decodeFile(imageFile.absolutePath)
+                    val rotatedBitmap = rotateBitmap(takenImageBitMap, imageFile)
+
+                    viewFinder.visibility = View.GONE
+                    scanBtn.visibility = View.GONE
+
+                    imagePreview.visibility = View.VISIBLE
+                    imagePreview.setImageBitmap(rotatedBitmap)
+
+                    confirmButton.visibility = View.VISIBLE
+
+                    confirmButton.setOnClickListener {
+                        uploadImageToFirebase(savedUri, auth.currentUser!!.uid)
+                        Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
+                        navigateToHome()
+                    }
                 }
             }
         )

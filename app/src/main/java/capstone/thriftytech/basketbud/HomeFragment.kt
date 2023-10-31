@@ -51,6 +51,7 @@ class HomeFragment : Fragment() {
         swipeRefreshLayout = view.findViewById(R.id.swipeRefresh)
         swipeRefreshLayout.setOnRefreshListener {
             getExpenseData()
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -79,8 +80,6 @@ class HomeFragment : Fragment() {
                 val expense = Expense(imageUrl, purchaseDate, purchaseTotal, store, uid)
                 expenseList.add(expense)
             }
-
-            expenseRecyclerView.adapter?.notifyDataSetChanged()
 
             if(expenseList.isEmpty()) {
                 noReceiptTV.visibility = View.GONE
