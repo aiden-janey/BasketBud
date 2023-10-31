@@ -105,9 +105,7 @@ class CameraActivity : AppCompatActivity() {
 
         scanBtn.setOnClickListener { scanReceipt() }
 
-        backButton.setOnClickListener {
-            navigateToHome()
-        }
+        backButton.setOnClickListener { navigateToHome() }
         
         camExecutor = Executors.newSingleThreadExecutor() 
     }
@@ -180,12 +178,15 @@ class CameraActivity : AppCompatActivity() {
 
                 // Create an Expense object
                 val thisExpense = Expense(
+//                    expenseID = expense.expenseID,
                     imageUrl = downloadUrl,
                     purchaseDate = expense.purchaseDate,
                     purchaseTotal = expense.purchaseTotal,
                     store = expense.store,
                     userID = expense.userID
                 )
+
+                Log.d("Expense Data", "Expense Data (before Upload) $thisExpense")
 
                 uploadExpenseToFirebase(thisExpense)
             }
@@ -247,13 +248,14 @@ class CameraActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     //Text Extract
                     val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
-                    var expense = Expense("image_url", "puchase_date", 0.0, "store_name", "user_ID")
+                    var purchaseDate = ""
+                    var storeName = ""
+                    var purchaseTotal = 0.0
 
                     recognizer.process(img)
                         .addOnSuccessListener {
                             Log.d("Receipt Data", it.text)
                             val text = it.text
-                            var purchaseDate = ""
 
                             val store = Store(
                                 storeTools.findAddress(it.text),
@@ -262,7 +264,7 @@ class CameraActivity : AppCompatActivity() {
                                 storeTools.findProv(it.text)
                             )
 
-                            val storeName = store.store_name.toString()
+                            storeName = store.store_name.toString()
 
                             var date = "2023/10/29"
                             addStore(store)
@@ -304,14 +306,11 @@ class CameraActivity : AppCompatActivity() {
 
                             Log.d("Puchase Total Captured", "Captured: $totalMatch")
 
-                            val purchaseTotal = totalMatch?.replace("CAD", "")?.replace(" ", "")?.toDouble()
+                            purchaseTotal = totalMatch?.replace("CAD", "")?.replace(" ", "")?.toDouble()!!
 
-                            expense = Expense("image_url", purchaseDate, purchaseTotal, storeName,auth.currentUser!!.uid)
 //                            Log.d("Receipt Data", "Store Name: $storeName")
 //                            Log.d("Receipt Data", "Purchase Date: $purchaseDate")
 //                            Log.d("Receipt Data", "Purchase Total: $purchaseTotal")
-
-                            Log.d("Expense Data", "Expense Data (In Text Reco) $expense")
 
                             Log.d(TAG, "Receipt Data Stored")
                         }.addOnFailureListener {
@@ -334,7 +333,12 @@ class CameraActivity : AppCompatActivity() {
                     confirmButton.visibility = View.VISIBLE
 
                     confirmButton.setOnClickListener {
-                        Log.d("Expense Data", "Expense Data (before Upload) $expense")
+                        val expensesCollection = db.collection("expenses")
+                        // Generate a new document reference with an auto-generated ID
+                        val newExpenseRef = expensesCollection.document()
+                        val expenseID = newExpenseRef.id
+//                        val expense = Expense(expenseID, "image_url", purchaseDate, purchaseTotal, storeName, auth.currentUser?.uid)
+                        val expense = Expense("image_url", purchaseDate, purchaseTotal, storeName, auth.currentUser?.uid)
                         uploadImageToFirebase(savedUri, expense)
                         Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
                         navigateToHome()

@@ -15,23 +15,40 @@
             android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
-            <Toolbar
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:contentInsetStart="0dp"
-                android:contentInsetLeft="0dp"
-                app:contentInsetLeft="0dp"
-                app:contentInsetStart="0dp">
+                android:layout_height="wrap_content">
+
+                <Toolbar
+                    android:id="@+id/homeToolBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:contentInsetStart="0dp"
+                    android:contentInsetLeft="0dp"
+                    app:contentInsetLeft="0dp"
+                    app:contentInsetStart="0dp">
+
+                    <TextView
+                        android:id="@+id/userNameTV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hello, User"
+                        android:textSize="17sp"
+                        android:layout_marginStart="15dp"
+                        android:textColor="@color/white"/>
+                </Toolbar>
 
                 <TextView
-                    android:id="@+id/userNameTV"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/expense_details_title"
+                    android:layout_width="230dp"
                     android:layout_height="wrap_content"
-                    android:text="Hello, User"
-                    android:textSize="17sp"
-                    android:layout_marginStart="15dp"
+                    android:layout_below="@+id/homeToolBar"
+                    android:text="Expense Tracker"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="20dp"
                     android:textColor="@color/white"/>
-            </Toolbar>
+            </RelativeLayout>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>

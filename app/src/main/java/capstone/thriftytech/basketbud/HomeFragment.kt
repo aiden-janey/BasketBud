@@ -1,5 +1,6 @@
 package capstone.thriftytech.basketbud
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -56,8 +57,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun getExpenseData() {
-//        expenseRecyclerView.visibility = View.GONE
-
         val uid = user?.uid
         val expensesCollection = firestore.collection("expenses")
         val query = expensesCollection.whereEqualTo("userID", uid)
@@ -72,11 +71,13 @@ class HomeFragment : Fragment() {
 
             snapshot?.forEach { documentSnapshot ->
                 val data = documentSnapshot.data
+//                val expenseID = data["expenseID"] as String
                 val imageUrl = data["imageUrl"] as String
                 val purchaseDate = data["purchaseDate"] as String
                 val purchaseTotal = (data["purchaseTotal"] as Double?) ?: 0.0
                 val store = data["store"] as String
 
+//                val expense = Expense(expenseID, imageUrl, purchaseDate, purchaseTotal, store, uid)
                 val expense = Expense(imageUrl, purchaseDate, purchaseTotal, store, uid)
                 expenseList.add(expense)
             }
@@ -86,6 +87,18 @@ class HomeFragment : Fragment() {
             }
             else {
                 val adapter = ExpenseAdapter(expenseList)
+
+                adapter.setOnItemClickListener(object : ExpenseAdapter.OnItemClickListener {
+                    override fun onItemClick(expense: Expense) {
+                        val intent = Intent(requireContext(), ExpenseDetails::class.java)
+                        intent.putExtra("imageUrl", expense.imageUrl)
+                        intent.putExtra("purchaseDate", expense.purchaseDate)
+                        intent.putExtra("purchaseTotal", expense.purchaseTotal)
+                        intent.putExtra("store", expense.store)
+                        startActivity(intent)
+                    }
+                })
+
                 expenseRecyclerView.adapter = adapter
                 expenseRecyclerView.visibility = View.VISIBLE
             }
