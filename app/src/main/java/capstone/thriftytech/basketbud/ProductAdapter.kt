@@ -10,6 +10,11 @@ import capstone.thriftytech.basketbud.data.Product
 
 class ProductAdapter(var context: Context, var productsList: ArrayList<Product>) :
     RecyclerView.Adapter<ProductAdapter.MyViewHolder>() {
+
+    fun setFilteredList(productsList: ArrayList<Product>) {
+        this.productsList = productsList
+        notifyDataSetChanged()
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val v = LayoutInflater.from(context).inflate(R.layout.product, parent, false)
         return MyViewHolder(v)

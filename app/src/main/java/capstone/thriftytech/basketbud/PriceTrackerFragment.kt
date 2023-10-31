@@ -2,29 +2,29 @@ package capstone.thriftytech.basketbud
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import capstone.thriftytech.basketbud.data.Product
 import capstone.thriftytech.basketbud.data.Store
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
-import java.util.ArrayList
+import java.util.Locale
 
 class PriceTrackerFragment : Fragment() {
     private lateinit var binding: ActivityCameraBinding
     private val user = Firebase.auth.currentUser
-    private val originalProductList = ArrayList<Product>()
-    private val filteredProductList = ArrayList<Product>()
+    private val productsList = ArrayList<Product>()
+    private lateinit var searchView: SearchView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,20 +40,42 @@ class PriceTrackerFragment : Fragment() {
         showUserName()
         fetchUserProducts()
 
-        val searchView: SearchView = requireView().findViewById(R.id.searchView)
+        searchView = requireView().findViewById(R.id.searchView)
 
-        searchView.queryHint = "Search Products"
-
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                filterProducts(newText ?: "")
+                filterList(newText)
                 return true
             }
         })
+    }
+
+    private fun filterList(query : String?) {
+        val recyclerView: RecyclerView =
+            requireView().findViewById(R.id.recyclerView)
+        val layoutManager = LinearLayoutManager(context)
+        val adapter = context?.let { ProductAdapter(it, productsList) }
+        recyclerView.layoutManager = layoutManager
+        recyclerView.adapter = adapter
+
+        if (query != null) {
+            val filteredList = ArrayList<Product>()
+            for (i in productsList) {
+                if (i.prod_name?.lowercase(Locale.ROOT)?.contains(query) == true) {
+                    filteredList.add(i)
+                }
+            }
+
+            if (filteredList.isEmpty()) {
+                Toast.makeText(context, "No Product Found", Toast.LENGTH_SHORT).show()
+            } else {
+                adapter?.setFilteredList(filteredList)
+            }
+        }
     }
 
     private fun showUserName() {
@@ -82,8 +104,6 @@ class PriceTrackerFragment : Fragment() {
                 .whereEqualTo("user_id", currentUserUid)
                 .get()
                 .addOnSuccessListener { querySnapshot ->
-                    val productsList = ArrayList<Product>()
-
                     for (document in querySnapshot.documents) {
                         val product = document.toObject(Product::class.java)
                         val storeId = product?.store_id
@@ -119,9 +139,6 @@ class PriceTrackerFragment : Fragment() {
                                 }
                         }
                     }
-
-                    originalProductList.clear()
-                    originalProductList.addAll(productsList)
                 }
                 .addOnFailureListener { exception ->
                     val errorMessage = "Failed to retrieve product data: ${exception.message}"
@@ -131,25 +148,4 @@ class PriceTrackerFragment : Fragment() {
                 }
         }
     }
-
-    private fun filterProducts(query: String) {
-        val recyclerView: RecyclerView = requireView().findViewById(R.id.recyclerView)
-        val layoutManager = LinearLayoutManager(context)
-
-        if (query.isBlank()) {
-            val adapter = context?.let { ProductAdapter(it, originalProductList) }
-            recyclerView.layoutManager = layoutManager
-            recyclerView.adapter = adapter
-        } else {
-            val filteredList = originalProductList.filter { product ->
-                product.prod_name?.contains(query, ignoreCase = true) == true
-            }
-            val adapter = context?.let { ProductAdapter(it, filteredProductList) }
-            recyclerView.layoutManager = layoutManager
-            recyclerView.adapter = adapter
-        }
-
-        recyclerView.adapter?.notifyDataSetChanged()
-    }
-
 }
