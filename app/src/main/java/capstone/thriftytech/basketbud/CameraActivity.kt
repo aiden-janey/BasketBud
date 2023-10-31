@@ -276,7 +276,7 @@ class CameraActivity : AppCompatActivity() {
                             for (block in it.textBlocks) {
                                 for (line in block.lines) {
                                     val lineText = line.text
-                                    if(lineText.equals("SUBTOTAL", true))
+                                    if(lineText.contains("SUBTOTAL", true))
                                         break
                                     date = productTools.findDate(lineText)
                                     val product = Product(
@@ -359,9 +359,13 @@ class CameraActivity : AppCompatActivity() {
 
     fun getStoreId(store: Store): String{
         var storeId = "No StoreID Found"
-        db.collection("stores").whereEqualTo("store_name", store.store_name).get().addOnSuccessListener {
-            //get id
-        }
+        db.collection("stores").whereEqualTo("store_name", store.store_name).get()
+            .addOnSuccessListener {
+            for(doc in it.documents)
+                storeId = doc.id
+        }.addOnFailureListener {
+            storeId = "No StoreID Found"
+            }
         return storeId
     }
 
