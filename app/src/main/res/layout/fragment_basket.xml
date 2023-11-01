@@ -6,35 +6,44 @@
     android:layout_height="match_parent"
     tools:context=".BasketFragment">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout2"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+            android:layout_height="wrap_content">
 
-            <Toolbar
+            <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:contentInsetStart="0dp"
-                android:contentInsetLeft="0dp"
-                app:contentInsetLeft="0dp"
-                app:contentInsetStart="0dp">
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
-                <TextView
-                    android:id="@+id/userNameTV"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:text="Hello, User"
-                    android:textColor="@color/white"
-                    android:textSize="17sp" />
-            </Toolbar>
+                <Toolbar
+                    android:layout_width="match_parent"
+                    android:layout_height="59dp"
+                    android:background="#00FFFFFF"
+                    android:contentInsetStart="0dp"
+                    android:contentInsetLeft="0dp"
+                    app:contentInsetLeft="0dp"
+                    app:contentInsetStart="0dp">
 
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
-    </com.google.android.material.appbar.AppBarLayout>
+                    <TextView
+                        android:id="@+id/userNameTV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:text="Hello, User"
+                        android:textColor="@color/white"
+                        android:textSize="17sp" />
+                </Toolbar>
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
+    </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout2"
@@ -89,5 +98,14 @@
             app:layout_constraintTop_toBottomOf="@+id/add_item_textView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageButton
+        android:id="@+id/delete_selected"
+        android:layout_width="116dp"
+        android:layout_height="61dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/baseline_delete_outline_24"
+        app:layout_anchor="@+id/frameLayout"
+        app:layout_anchorGravity="end|top" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

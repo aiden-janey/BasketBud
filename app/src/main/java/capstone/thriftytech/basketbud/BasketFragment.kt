@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import capstone.thriftytech.basketbud.data.BasketItem
 import capstone.thriftytech.basketbud.data.BasketListBank
@@ -51,8 +52,7 @@ class BasketFragment : Fragment() {
         showUserName()
         //initialize recyclerView adpater
         val listAdapter = BasketListAdapter {
-            //Log.d("onClick", it.itemName + " clicked")
-            //viewModel.deleteItem(it)
+
         }
         //build recycler list items
         binding.recyclerView.adapter = listAdapter
@@ -79,6 +79,14 @@ class BasketFragment : Fragment() {
         )
         val textView = binding.addItemTextView
         textView.setAdapter(bankAdapter)
+        //delete items
+        binding.deleteSelected.setOnClickListener {
+            for (item in listAdapter.selectedItems) {
+                viewModel.deleteItem(item)
+            }
+            //disable select mode
+            listAdapter.isSelectable = false
+        }
     }
 
     private fun showUserName() {

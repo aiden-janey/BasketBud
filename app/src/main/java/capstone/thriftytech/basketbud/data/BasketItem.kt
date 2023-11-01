@@ -12,5 +12,5 @@ data class BasketItem (
     val id: Int = 0,
     //shopping list item name
     @ColumnInfo(name = "name")
-    val itemName: String
+    val itemName: String,
 )
