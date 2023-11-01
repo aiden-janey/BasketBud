@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -98,7 +97,7 @@ class MainActivity : AppCompatActivity() {
 //        return result
 //    }
 
-    fun logoutOfAcct(view: View) {
+    private fun logoutOfAcct() {
         val intent = Intent(this, Login::class.java)
         startActivity(intent)
         finish()

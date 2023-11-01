@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -49,13 +48,6 @@ class AccountFragment : Fragment() {
         userNameTV.text = "Hello, ${name}"
     }
 
-<<<<<<< HEAD
-    fun logoutOfAcct(view: View) {
-        val intent = Intent(activity, Login::class.java)
-        activity?.startActivity(intent)
-        FirebaseAuth.getInstance().signOut()
-        Toast.makeText(activity, "Successful Logout", Toast.LENGTH_SHORT).show()
-=======
     private fun logout() {
         val btnLogout: ImageButton = requireView().findViewById(R.id.logoutButton)
         btnLogout.setOnClickListener {
@@ -65,6 +57,5 @@ class AccountFragment : Fragment() {
                 activity?.startActivity(it)
             }
         }
->>>>>>> 6db4ac30df54e301825e3b75f3225d81025e427e
     }
 }
