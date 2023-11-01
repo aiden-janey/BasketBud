@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import capstone.thriftytech.basketbud.data.Expense
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.ktx.Firebase
 
 class HomeFragment : Fragment() {
@@ -27,6 +29,10 @@ class HomeFragment : Fragment() {
 
     //Class
     private lateinit var expenseList: ArrayList<Expense>
+
+    private val expensesCollection = firestore.collection("expenses")
+    private val pageSize = 7L // Adjust this based on your requirements
+    private var lastVisibleDocument: DocumentSnapshot? = null
 
     override fun onCreateView( inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,19 +53,38 @@ class HomeFragment : Fragment() {
 
         expenseList = arrayListOf<Expense>()
 
-        getExpenseData()
+        getInitialExpenseData()
 
         swipeRefreshLayout = view.findViewById(R.id.swipeRefresh)
         swipeRefreshLayout.setOnRefreshListener {
-            getExpenseData()
+            getInitialExpenseData()
             swipeRefreshLayout.isRefreshing = false
         }
+
+        // Implement infinite scrolling to load more expenses as the user scrolls
+        expenseRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                // Load more expenses when reaching the end of the list
+                if (visibleItemCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0) {
+                    loadMoreExpenseData()
+                }
+            }
+        })
     }
 
-    private fun getExpenseData() {
+    private fun getInitialExpenseData() {
         val uid = user?.uid
-        val expensesCollection = firestore.collection("expenses")
-        val query = expensesCollection.whereEqualTo("userID", uid)
+        val query = expensesCollection
+            .whereEqualTo("userID", uid)
+            .orderBy("purchaseDate", Query.Direction.DESCENDING)
+            .limit(pageSize)
 
         query.addSnapshotListener { snapshot, exception ->
             if (exception != null) {
@@ -69,25 +94,21 @@ class HomeFragment : Fragment() {
 
             expenseList.clear()
 
-            snapshot?.forEach { documentSnapshot ->
+            snapshot?.documents?.forEach { documentSnapshot ->
                 val data = documentSnapshot.data
-//                val expenseID = data["expenseID"] as String
-                val imageUrl = data["imageUrl"] as String
+                val imageUrl = data?.get("imageUrl") as String
                 val purchaseDate = data["purchaseDate"] as String
                 val purchaseTotal = (data["purchaseTotal"] as Double?) ?: 0.0
                 val store = data["store"] as String
 
-//                val expense = Expense(expenseID, imageUrl, purchaseDate, purchaseTotal, store, uid)
                 val expense = Expense(imageUrl, purchaseDate, purchaseTotal, store, uid)
                 expenseList.add(expense)
             }
 
-            if(expenseList.isEmpty()) {
+            if (expenseList.isEmpty()) {
                 noReceiptTV.visibility = View.VISIBLE
-            }
-            else {
+            } else {
                 val adapter = ExpenseAdapter(expenseList)
-
                 adapter.setOnItemClickListener(object : ExpenseAdapter.OnItemClickListener {
                     override fun onItemClick(expense: Expense) {
                         val intent = Intent(requireContext(), ExpenseDetails::class.java)
@@ -102,6 +123,37 @@ class HomeFragment : Fragment() {
                 expenseRecyclerView.adapter = adapter
                 expenseRecyclerView.visibility = View.VISIBLE
             }
+
+            if (snapshot != null && !snapshot.isEmpty) {
+                lastVisibleDocument = snapshot.documents[snapshot.size() - 1]
+            }
+        }
+    }
+
+    private fun loadMoreExpenseData() {
+        val uid = user?.uid
+        val query = expensesCollection
+            .whereEqualTo("userID", uid)
+            .orderBy("purchaseDate", Query.Direction.DESCENDING)
+            .startAfter(lastVisibleDocument)
+            .limit(pageSize)
+
+        query.get().addOnSuccessListener { querySnapshot ->
+            val newExpenses = querySnapshot.documents.mapNotNull { document ->
+                val data = document.data
+                val imageUrl = data?.get("imageUrl") as String
+                val purchaseDate = data["purchaseDate"] as String
+                val purchaseTotal = (data["purchaseTotal"] as Double?) ?: 0.0
+                val store = data["store"] as String
+
+                Expense(imageUrl, purchaseDate, purchaseTotal, store, uid)
+            }
+
+            expenseList.addAll(newExpenses)
+            lastVisibleDocument = querySnapshot.documents.lastOrNull()
+
+            // Notify the adapter that the data set has changed
+            expenseRecyclerView.adapter?.notifyDataSetChanged()
         }
     }
 
