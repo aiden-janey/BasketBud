@@ -10,7 +10,9 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
@@ -32,7 +34,7 @@ class BasketFragment : Fragment() {
         )
     }
     //initialize work bank array
-    var basketListBank = BasketListBank().listArray
+    private var basketListBank = BasketListBank().listArray
 
     //initialize view binding for Basket Fragment
     private var _binding: FragmentBasketBinding? = null
@@ -50,7 +52,7 @@ class BasketFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         showUserName()
-        //initialize recyclerView adpater
+        //initialize recyclerView adapter
         val listAdapter = BasketListAdapter {
 
         }
@@ -77,15 +79,29 @@ class BasketFragment : Fragment() {
             androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
             basketListBank
         )
-        val textView = binding.addItemTextView
-        textView.setAdapter(bankAdapter)
+        binding.addItemTextView.setAdapter(bankAdapter)
         //delete items
         binding.deleteSelected.setOnClickListener {
-            for (item in listAdapter.selectedItems) {
-                viewModel.deleteItem(item)
+            if (!listAdapter.isSelectable) {
+                Toast.makeText(context, "No items selected", Toast.LENGTH_SHORT).show()
+            } else {
+                for (item in listAdapter.selectedItems) {
+                    viewModel.deleteItem(item)
+                }
+                //disable select mode
+                listAdapter.isSelectable = false
             }
-            //disable select mode
-            listAdapter.isSelectable = false
+        }
+    }
+
+    //set show delete
+    private fun showDelete(boolean: Boolean) {
+        if (boolean) {
+            binding.deleteSelected.isEnabled = true
+            binding.deleteSelected.visibility = View.VISIBLE
+        } else {
+            binding.deleteSelected.isEnabled = false
+            binding.deleteSelected.visibility = View.GONE
         }
     }
 

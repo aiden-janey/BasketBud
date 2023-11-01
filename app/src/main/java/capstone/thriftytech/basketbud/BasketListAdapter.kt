@@ -39,13 +39,17 @@ class BasketListAdapter(private val onItemClicked: (BasketItem) -> Unit) : ListA
                 if (holder.itemView.isSelected) {
                     holder.itemView.isSelected = false
                     selectedItems.remove(current)
+                    //check if list is empty, disable select mode
+                    if (selectedItems.isEmpty()) {
+                        isSelectable = false
+                    }
                 } else {
                     holder.itemView.isSelected = true
                     //add item to selected list
                     selectedItems.add(current)
                 }
                 isSelectedColor(holder)
-                Log.d("Mode", "Selected: ${holder.itemView.isSelected}")
+                //Log.d("Mode", "Selected: ${holder.itemView.isSelected}")
             }
             //Log.d("Item", "Item flag: ${current.itemSelected}")
         }
