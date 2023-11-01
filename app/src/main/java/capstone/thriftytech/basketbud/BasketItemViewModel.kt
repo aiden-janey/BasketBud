@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 class BasketItemViewModel(private val basketItemDao: BasketItemDao) : ViewModel() {
     //initialize list of shopping items
     val allItems: LiveData<List<BasketItem>> = basketItemDao.getItems().asLiveData()
+
     //insert item using BasketItem entity/object
     fun insertItem(basketItem: BasketItem) {
         //start coroutine for insert
@@ -38,7 +39,7 @@ class BasketItemViewModel(private val basketItemDao: BasketItemDao) : ViewModel(
     }
     //check valid entries
     fun isEntryValid(itemName: String): Boolean {
-        return !itemName.isBlank()
+        return itemName.isNotBlank()
     }
 }
 //resolve unimplemented methods, instantiate ViewModel

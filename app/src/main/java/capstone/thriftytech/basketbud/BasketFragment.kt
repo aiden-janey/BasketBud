@@ -1,21 +1,30 @@
 package capstone.thriftytech.basketbud
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.addCallback
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import capstone.thriftytech.basketbud.data.BasketItem
 import capstone.thriftytech.basketbud.data.BasketListBank
-import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
 import capstone.thriftytech.basketbud.databinding.FragmentBasketBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+
 
 class BasketFragment : Fragment() {
     //private lateinit var binding: ActivityCameraBinding
@@ -27,7 +36,7 @@ class BasketFragment : Fragment() {
         )
     }
     //initialize work bank array
-    var basketListBank = BasketListBank().listArray
+    private var basketListBank = BasketListBank().listArray
 
     //initialize view binding for Basket Fragment
     private var _binding: FragmentBasketBinding? = null
@@ -45,9 +54,9 @@ class BasketFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         showUserName()
-        //initialize recyclerView adpater
+        //initialize recyclerView adapter
         val listAdapter = BasketListAdapter {
-            Log.d("onClick", it.itemName + " clicked")
+
         }
         //build recycler list items
         binding.recyclerView.adapter = listAdapter
@@ -72,8 +81,49 @@ class BasketFragment : Fragment() {
             androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
             basketListBank
         )
-        val textView = binding.addItemTextView
-        textView.setAdapter(bankAdapter)
+        binding.addItemTextView.setAdapter(bankAdapter)
+        //delete items
+        binding.deleteSelected.setOnClickListener {
+            if (!listAdapter.isSelectable) {
+                context?.let { it1 ->
+                    MaterialAlertDialogBuilder(it1)
+                        .setTitle("No items selected")
+                        .setMessage("Select items first")
+                        .setNegativeButton("Ok"){_,_ ->}
+                        .show()
+                }
+                Log.d("Debug", "Show Toast")
+            } else {
+                context?.let { it1 ->
+                    MaterialAlertDialogBuilder(it1)
+                        .setTitle("Delete item permanently")
+                        .setMessage("Are you sure you want to delete these item?")
+                        .setPositiveButton("Yes"){_,_ ->
+                            for (item in listAdapter.selectedItems) {
+                                viewModel.deleteItem(item)
+                            }
+                            //disable select mode, clear track variables in listAdapter
+                            listAdapter.isSelectable = false
+                            listAdapter.selectedItems.clear()
+                        }
+                        .setNegativeButton("No"){_,_ ->
+                            Toast.makeText(context,"canceled" ,Toast.LENGTH_SHORT).show()
+                        }
+                        .show()
+                }
+            }
+        }
+    }
+
+    //set show delete
+    private fun showDelete(boolean: Boolean) {
+        if (boolean) {
+            binding.deleteSelected.isEnabled = true
+            binding.deleteSelected.visibility = View.VISIBLE
+        } else {
+            binding.deleteSelected.isEnabled = false
+            binding.deleteSelected.visibility = View.GONE
+        }
     }
 
     private fun showUserName() {
