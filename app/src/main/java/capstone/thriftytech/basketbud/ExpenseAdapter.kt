@@ -10,6 +10,8 @@ import capstone.thriftytech.basketbud.data.Expense
 import com.squareup.picasso.Picasso
 
 class ExpenseAdapter(private val expenses: ArrayList<Expense>): RecyclerView.Adapter<ExpenseAdapter.ViewHolder>(){
+    private var onItemClickListener: OnItemClickListener? = null
+
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         val receiptIV: ImageView = itemView.findViewById(R.id.receiptIV)
         val storeTV: TextView = itemView.findViewById(R.id.storeTV)
@@ -33,9 +35,21 @@ class ExpenseAdapter(private val expenses: ArrayList<Expense>): RecyclerView.Ada
         holder.storeTV.text = expense.store
         holder.purchaseDateTV.text = expense.purchaseDate
         holder.purchaseTotalTV.text = expense.purchaseTotal.toString()
+
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.onItemClick(expense)
+        }
     }
 
     override fun getItemCount(): Int {
         return expenses.size
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(expense: Expense)
+    }
+
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        this.onItemClickListener = listener
     }
 }

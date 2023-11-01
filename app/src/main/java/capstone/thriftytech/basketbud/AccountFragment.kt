@@ -1,17 +1,20 @@
 package capstone.thriftytech.basketbud
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 class AccountFragment : Fragment() {
-    private lateinit var binding: ActivityCameraBinding
+    private val auth: FirebaseAuth = Firebase.auth
     private val user = Firebase.auth.currentUser
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,6 +28,8 @@ class AccountFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         showUserName()
+
+        logout()
     }
 
     private fun showUserName() {
@@ -41,5 +46,16 @@ class AccountFragment : Fragment() {
         }
 
         userNameTV.text = "Hello, ${name}"
+    }
+
+    private fun logout() {
+        val btnLogout: ImageButton = requireView().findViewById(R.id.logoutButton)
+        btnLogout.setOnClickListener {
+            auth.signOut()
+            Intent(this.activity, Login::class.java).also {
+                it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                activity?.startActivity(it)
+            }
+        }
     }
 }
