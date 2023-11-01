@@ -1,12 +1,15 @@
 package capstone.thriftytech.basketbud
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import capstone.thriftytech.basketbud.databinding.ActivityCameraBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -41,5 +44,12 @@ class AccountFragment : Fragment() {
         }
 
         userNameTV.text = "Hello, ${name}"
+    }
+
+    fun logoutOfAcct(view: View) {
+        val intent = Intent(activity, Login::class.java)
+        activity?.startActivity(intent)
+        FirebaseAuth.getInstance().signOut()
+        Toast.makeText(activity, "Successful Logout", Toast.LENGTH_SHORT).show()
     }
 }
