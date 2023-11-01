@@ -1,7 +1,8 @@
 package capstone.thriftytech.basketbud.data
 
 data class Expense(
-//    val expenseID: String? =null,
+    val expenseID: String? = null,
+    val receiptName: String? = null,
     val imageUrl: String? = null,
     val purchaseDate: String? = null,
     val purchaseTotal: Double? = null,

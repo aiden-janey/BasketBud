@@ -79,6 +79,58 @@ class HomeFragment : Fragment() {
         })
     }
 
+    private fun getExpenseData() {
+        val uid = user?.uid
+        val expensesCollection = firestore.collection("expenses")
+        val query = expensesCollection.whereEqualTo("userID", uid)
+
+        query.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                // Handle the error
+                return@addSnapshotListener
+            }
+
+            expenseList.clear()
+
+            snapshot?.forEach { documentSnapshot ->
+                val data = documentSnapshot.data
+                val expenseID = documentSnapshot.id
+                val receiptName = data?.get("receiptName") as String?
+                val imageUrl = data?.get("imageUrl") as String
+                val purchaseDate = data["purchaseDate"] as String
+                val purchaseTotal = (data["purchaseTotal"] as Double?) ?: 0.0
+                val store = data["store"] as String
+
+                val expense = Expense(expenseID, receiptName, imageUrl, purchaseDate, purchaseTotal, store, uid)
+                expenseList.add(expense)
+            }
+
+            expenseRecyclerView.adapter?.notifyDataSetChanged()
+
+            if(expenseList.isEmpty()) {
+                noReceiptTV.visibility = View.GONE
+            }
+            else {
+                val adapter = ExpenseAdapter(expenseList)
+                adapter.setOnItemClickListener(object : ExpenseAdapter.OnItemClickListener {
+                    override fun onItemClick(expense: Expense) {
+                        val intent = Intent(requireContext(), ExpenseDetails::class.java)
+                        intent.putExtra("expenseID", expense.expenseID)
+                        intent.putExtra("receiptName", expense.receiptName)
+                        intent.putExtra("imageUrl", expense.imageUrl)
+                        intent.putExtra("purchaseDate", expense.purchaseDate)
+                        intent.putExtra("purchaseTotal", expense.purchaseTotal)
+                        intent.putExtra("store", expense.store)
+                        startActivity(intent)
+                    }
+                })
+
+                expenseRecyclerView.adapter = adapter
+                expenseRecyclerView.visibility = View.VISIBLE
+            }
+        }
+    }
+
     private fun getInitialExpenseData() {
         val uid = user?.uid
         val query = expensesCollection
@@ -96,22 +148,27 @@ class HomeFragment : Fragment() {
 
             snapshot?.documents?.forEach { documentSnapshot ->
                 val data = documentSnapshot.data
+                val expenseID = documentSnapshot.id
+                val receiptName = data?.get("receiptName") as String?
                 val imageUrl = data?.get("imageUrl") as String
                 val purchaseDate = data["purchaseDate"] as String
                 val purchaseTotal = (data["purchaseTotal"] as Double?) ?: 0.0
                 val store = data["store"] as String
 
-                val expense = Expense(imageUrl, purchaseDate, purchaseTotal, store, uid)
+                val expense = Expense(expenseID, receiptName, imageUrl, purchaseDate, purchaseTotal, store, uid)
                 expenseList.add(expense)
             }
 
             if (expenseList.isEmpty()) {
                 noReceiptTV.visibility = View.VISIBLE
+                expenseRecyclerView.visibility = View.GONE
             } else {
                 val adapter = ExpenseAdapter(expenseList)
                 adapter.setOnItemClickListener(object : ExpenseAdapter.OnItemClickListener {
                     override fun onItemClick(expense: Expense) {
                         val intent = Intent(requireContext(), ExpenseDetails::class.java)
+                        intent.putExtra("expenseID", expense.expenseID)
+                        intent.putExtra("receiptName", expense.receiptName)
                         intent.putExtra("imageUrl", expense.imageUrl)
                         intent.putExtra("purchaseDate", expense.purchaseDate)
                         intent.putExtra("purchaseTotal", expense.purchaseTotal)
@@ -122,6 +179,10 @@ class HomeFragment : Fragment() {
 
                 expenseRecyclerView.adapter = adapter
                 expenseRecyclerView.visibility = View.VISIBLE
+            }
+
+            if(snapshot == null || snapshot.isEmpty) {
+                lastVisibleDocument = null
             }
 
             if (snapshot != null && !snapshot.isEmpty) {
@@ -141,12 +202,14 @@ class HomeFragment : Fragment() {
         query.get().addOnSuccessListener { querySnapshot ->
             val newExpenses = querySnapshot.documents.mapNotNull { document ->
                 val data = document.data
+                val expenseID = document.id
+                val receiptName = data?.get("receiptName") as String?
                 val imageUrl = data?.get("imageUrl") as String
                 val purchaseDate = data["purchaseDate"] as String
                 val purchaseTotal = (data["purchaseTotal"] as Double?) ?: 0.0
                 val store = data["store"] as String
 
-                Expense(imageUrl, purchaseDate, purchaseTotal, store, uid)
+                Expense(expenseID, receiptName, imageUrl, purchaseDate, purchaseTotal, store, uid)
             }
 
             expenseList.addAll(newExpenses)

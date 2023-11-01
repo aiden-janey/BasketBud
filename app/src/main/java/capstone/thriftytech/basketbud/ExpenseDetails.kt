@@ -3,14 +3,15 @@ package capstone.thriftytech.basketbud
 import android.content.DialogInterface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -36,25 +37,34 @@ class ExpenseDetails : AppCompatActivity() {
         deleteExpenseConfirmation()
     }
 
-    private fun deleteExpenseFromFirebase(expenseID: String) {
-        val user = Firebase.auth.currentUser
-        val uid = user?.uid
+    private fun deleteExpenseFromFirebase(expenseID: String, receiptName: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val expensesCollection = firestore.collection("expenses")
 
-        if (uid != null) {
-            val firestore = FirebaseFirestore.getInstance()
-            val expensesCollection = firestore.collection("expenses").document(uid)
+        expensesCollection.document(expenseID)
+            .delete()
+            .addOnSuccessListener {
+                deleteReceiptFromFirebase(receiptName)
+                Toast.makeText(this, "Transaction Data Deleted", Toast.LENGTH_LONG).show()
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Deleting Err ${e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
 
-            expensesCollection.collection("expenses")
-                .document(expenseID)
-                .delete()
-                .addOnSuccessListener {
-                    Toast.makeText(this, "Transaction Data Deleted", Toast.LENGTH_LONG).show()
-                    finish()
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "Deleting Err ${e.message}", Toast.LENGTH_LONG).show()
-                }
-        }
+
+    private fun deleteReceiptFromFirebase(receiptName: String){
+        val storage = Firebase.storage
+        val storageRef = storage.reference.child("receipts/$receiptName")
+
+        storageRef.delete()
+            .addOnSuccessListener {
+                Log.d("Deleting Receipt Success", "Delete Image Success")
+            }
+            .addOnFailureListener { e ->
+                Log.d("Deleting Receipt Error", "Delete Image Error: $e")
+            }
     }
 
     private fun deleteExpenseConfirmation() {
@@ -63,7 +73,7 @@ class ExpenseDetails : AppCompatActivity() {
             alertBox.setTitle("Are you sure?")
             alertBox.setMessage("Do you want to delete this expense?")
             alertBox.setPositiveButton("Yes") { _: DialogInterface, _: Int ->
-                deleteExpenseFromFirebase(intent.getStringExtra("expenseID").toString())
+                deleteExpenseFromFirebase(intent.getStringExtra("expenseID").toString(), intent.getStringExtra("receiptName").toString())
             }
             alertBox.setNegativeButton("No") { _: DialogInterface, _: Int -> }
             alertBox.show()
@@ -76,7 +86,7 @@ class ExpenseDetails : AppCompatActivity() {
         val purchaseTotal = intent.getDoubleExtra("purchaseTotal", 0.0)
         val store = intent.getStringExtra("store")
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         val parsedDate = dateFormat.parse(purchaseDate)
 
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())

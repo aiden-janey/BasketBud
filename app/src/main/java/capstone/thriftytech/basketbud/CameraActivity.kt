@@ -48,6 +48,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.io.File
 import com.google.mlkit.vision.common.InputImage
+import java.util.Date
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -165,7 +166,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun uploadImageToFirebase(imageUri: Uri, expense: Expense) {
-        val imageRef = storageReference.child("receipts/${imageUri.lastPathSegment}")
+        val imageRef = storageReference.child("receipts/${expense.receiptName}")
         val uploadTask = imageRef.putFile(imageUri)
 
         uploadTask.addOnSuccessListener {
@@ -178,7 +179,8 @@ class CameraActivity : AppCompatActivity() {
 
                 // Create an Expense object
                 val thisExpense = Expense(
-//                    expenseID = expense.expenseID,
+                    expenseID = expense.expenseID,
+                    receiptName = expense.receiptName,
                     imageUrl = downloadUrl,
                     purchaseDate = expense.purchaseDate,
                     purchaseTotal = expense.purchaseTotal,
@@ -225,10 +227,10 @@ class CameraActivity : AppCompatActivity() {
         val imageCapture = imgCapture ?: return
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
+        val receiptName = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
 
         val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.DISPLAY_NAME, receiptName)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P)
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
@@ -248,14 +250,14 @@ class CameraActivity : AppCompatActivity() {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     //Text Extract
                     val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
-                    var purchaseDate = ""
-                    var storeName = ""
-                    var purchaseTotal = 0.0
 
                     recognizer.process(img)
                         .addOnSuccessListener {
                             Log.d("Receipt Data", it.text)
                             val text = it.text
+                            var purchaseDate = ""
+                            var storeName = ""
+                            var purchaseTotal = 0.0
 
                             val store = Store(
                                 storeTools.findAddress(it.text),
@@ -288,61 +290,69 @@ class CameraActivity : AppCompatActivity() {
                                         getStoreId(store),
                                         userId
                                     )
-
-                                    purchaseDate = product.buy_date.toString()
                                     addProduct(product)
                                 }
                             }
 
                             //Expense Tracking
-                            var totalPattern = Regex("""(\d+\.\s?\d{2}) CAD""") // Total amount pattern "(xx.xx CAD)"
-                            var totalMatch = totalPattern.find(text)?.groups?.get(1)?.value
+                            //Recognizing Purchase Total
+                            val totalPattern = Regex("""(\d+\.\s?\d{2})\s?(CAD|\$|CAD\$\s?)?""") // Total amount pattern "(xx.xx CAD)", "($xx.xx)", or "CAD$ xx.xx"
+                            val totalMatches = totalPattern.findAll(text)
 
-                            if (totalMatch == null){
-                                totalPattern = Regex("""CAD\$\s?(\d+\.\s?\d+)""")// Total amount pattern "(CAD$ xx.xx)"
+                            var lastMatchedValue: String? = null
+
+                            for (matchResult in totalMatches) {
+                                lastMatchedValue = matchResult.groups[1]?.value
                             }
 
-                            totalMatch = totalPattern.find(text)?.groups?.get(1)?.value
+                            // Remove non-numeric characters and convert to a double
+                            purchaseTotal = lastMatchedValue?.replace(Regex("[^\\d.]"), "")?.toDoubleOrNull() ?: 0.0
 
-                            Log.d("Puchase Total Captured", "Captured: $totalMatch")
+                            // Recognizing Purchase Date
+                            var datePattern = Regex("""(\d{2}/\d{2}/\d{4}|\d{2}/\d{2}/\d{2})""")
+                            var dateMatcher = datePattern.find(text)
 
-                            purchaseTotal = totalMatch?.replace("CAD", "")?.replace(" ", "")?.toDouble()!!
+                            val outputDateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
 
-//                            Log.d("Receipt Data", "Store Name: $storeName")
-//                            Log.d("Receipt Data", "Purchase Date: $purchaseDate")
-//                            Log.d("Receipt Data", "Purchase Total: $purchaseTotal")
+                            if (dateMatcher != null) {
+                                purchaseDate = dateMatcher.value
+                            } else {
+                                val currentDate = Date()
+                                purchaseDate = outputDateFormat.format(currentDate)
+                            }
+
+                            Log.d("Purchase Total Captured", "Captured: $lastMatchedValue")
+                            Log.d("Receipt Data After Scan", "Store Name: $storeName")
+                            Log.d("Receipt Data After Scan", "Purchase Date: $purchaseDate")
+                            Log.d("Receipt Data After Scan", "Purchase Total: $purchaseTotal")
+
+                            val expense = Expense(null, receiptName, "image_url", purchaseDate, purchaseTotal, storeName, auth.currentUser?.uid)
+
+                            //Confirm Receipt
+                            val savedUri = output.savedUri!!
+
+                            val imageFile = File(getRealPathFromURI(savedUri))
+                            val takenImageBitMap = BitmapFactory.decodeFile(imageFile.absolutePath)
+                            val rotatedBitmap = rotateBitmap(takenImageBitMap, imageFile)
+
+                            viewFinder.visibility = View.GONE
+                            scanBtn.visibility = View.GONE
+
+                            imagePreview.visibility = View.VISIBLE
+                            imagePreview.setImageBitmap(rotatedBitmap)
+
+                            confirmButton.visibility = View.VISIBLE
+
+                            confirmButton.setOnClickListener {
+                                uploadImageToFirebase(savedUri, expense)
+                                Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
+                                navigateToHome()
+                            }
 
                             Log.d(TAG, "Receipt Data Stored")
                         }.addOnFailureListener {
                             Log.d(TAG, "Can't Store Receipt Data")
                         }
-
-                    //Confirm Receipt
-                    val savedUri = output.savedUri!!
-
-                    val imageFile = File(getRealPathFromURI(savedUri))
-                    val takenImageBitMap = BitmapFactory.decodeFile(imageFile.absolutePath)
-                    val rotatedBitmap = rotateBitmap(takenImageBitMap, imageFile)
-
-                    viewFinder.visibility = View.GONE
-                    scanBtn.visibility = View.GONE
-
-                    imagePreview.visibility = View.VISIBLE
-                    imagePreview.setImageBitmap(rotatedBitmap)
-
-                    confirmButton.visibility = View.VISIBLE
-
-                    confirmButton.setOnClickListener {
-                        val expensesCollection = db.collection("expenses")
-                        // Generate a new document reference with an auto-generated ID
-                        val newExpenseRef = expensesCollection.document()
-                        val expenseID = newExpenseRef.id
-//                        val expense = Expense(expenseID, "image_url", purchaseDate, purchaseTotal, storeName, auth.currentUser?.uid)
-                        val expense = Expense("image_url", purchaseDate, purchaseTotal, storeName, auth.currentUser?.uid)
-                        uploadImageToFirebase(savedUri, expense)
-                        Toast.makeText(baseContext, "Receipt Saved", Toast.LENGTH_SHORT).show()
-                        navigateToHome()
-                    }
                 }
             }
         )
