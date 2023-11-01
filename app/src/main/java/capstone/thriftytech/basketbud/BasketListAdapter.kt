@@ -33,7 +33,7 @@ class BasketListAdapter(private val onItemClicked: (BasketItem) -> Unit) : ListA
             //if selection mode is not enabled
             if (!isSelectable) {
                 //search item
-                Log.d("Mode", "Search ${current.itemName}")
+                Log.d("Mode", "Search ${current.itemName} goes here!")
             } else {
                 //selection mode is enabled. toggle selected
                 if (holder.itemView.isSelected) {
@@ -48,10 +48,9 @@ class BasketListAdapter(private val onItemClicked: (BasketItem) -> Unit) : ListA
                     //add item to selected list
                     selectedItems.add(current)
                 }
-                isSelectedColor(holder)
-                //Log.d("Mode", "Selected: ${holder.itemView.isSelected}")
+                //isSelectedColor(holder)
+                notifyDataSetChanged()
             }
-            //Log.d("Item", "Item flag: ${current.itemSelected}")
         }
         //on long click
         holder.itemView.setOnLongClickListener {
@@ -60,19 +59,25 @@ class BasketListAdapter(private val onItemClicked: (BasketItem) -> Unit) : ListA
             isSelectable = true
             Log.d("Mode", "Select Mode: $isSelectable")
             holder.itemView.isSelected = true
-            isSelectedColor(holder)
+            //isSelectedColor(holder)
             selectedItems.add(current)
+            notifyDataSetChanged()
             return@setOnLongClickListener true
         }
         holder.bind(current)
     }
     //ItemViewHolder inflates from cardView
-    class BasketItemViewHolder(private var binding: BasketListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class BasketItemViewHolder(private var binding: BasketListItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: BasketItem) {
             //bind textView with Item data
             binding.apply {
                 itemName.text = item.itemName
-                selectedBox.visibility = View.GONE
+                selectedBox.visibility = if (isSelectable)
+                    View.VISIBLE
+                else
+                    View.GONE
+                selectedBox.isChecked = selectedItems.contains(item)
+                selectedBox.isClickable = false
             }
         }
     }

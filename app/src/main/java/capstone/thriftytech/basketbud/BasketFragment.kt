@@ -20,8 +20,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import capstone.thriftytech.basketbud.data.BasketItem
 import capstone.thriftytech.basketbud.data.BasketListBank
 import capstone.thriftytech.basketbud.databinding.FragmentBasketBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 
 
 class BasketFragment : Fragment() {
@@ -83,13 +85,31 @@ class BasketFragment : Fragment() {
         //delete items
         binding.deleteSelected.setOnClickListener {
             if (!listAdapter.isSelectable) {
-                Toast.makeText(context, "No items selected", Toast.LENGTH_SHORT).show()
-            } else {
-                for (item in listAdapter.selectedItems) {
-                    viewModel.deleteItem(item)
+                context?.let { it1 ->
+                    MaterialAlertDialogBuilder(it1)
+                        .setTitle("No items selected")
+                        .setMessage("Select items first")
+                        .setNegativeButton("Ok"){_,_ ->}
+                        .show()
                 }
-                //disable select mode
-                listAdapter.isSelectable = false
+                Log.d("Debug", "Show Toast")
+            } else {
+                context?.let { it1 ->
+                    MaterialAlertDialogBuilder(it1)
+                        .setTitle("Delete item permanently")
+                        .setMessage("Are you sure you want to delete these item?")
+                        .setPositiveButton("Yes"){_,_ ->
+                            for (item in listAdapter.selectedItems) {
+                                viewModel.deleteItem(item)
+                            }
+                            //disable select mode
+                            listAdapter.isSelectable = false
+                        }
+                        .setNegativeButton("No"){_,_ ->
+                            Toast.makeText(context,"canceled" ,Toast.LENGTH_SHORT).show()
+                        }
+                        .show()
+                }
             }
         }
     }
