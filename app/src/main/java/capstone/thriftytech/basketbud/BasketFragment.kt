@@ -102,8 +102,9 @@ class BasketFragment : Fragment() {
                             for (item in listAdapter.selectedItems) {
                                 viewModel.deleteItem(item)
                             }
-                            //disable select mode
+                            //disable select mode, clear track variables in listAdapter
                             listAdapter.isSelectable = false
+                            listAdapter.selectedItems.clear()
                         }
                         .setNegativeButton("No"){_,_ ->
                             Toast.makeText(context,"canceled" ,Toast.LENGTH_SHORT).show()
