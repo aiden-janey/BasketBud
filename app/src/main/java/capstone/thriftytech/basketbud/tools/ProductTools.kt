@@ -12,6 +12,11 @@ class ProductTools {
     val pricePattern = """(\$?\d{1,3}(?:,?\d{3})*(?:\.\d{2})?)""".toRegex()
     val namePattern = """\\b[a-zA-Z]+\\b""".toRegex()
     val datePattern = "\\b\\p{IsAlphabetic}+ \\d{1,2}, \\d{4} \\d{1,2}:\\d{2}\\b"
+
+    val productNames = arrayOf("LARGE EGGS", "BANANA", "MIX BQT CHARM", "OREO GOLDEN", "EGGPLANT LNG"
+    , "TOMATO ROMA", "MEAT", "SPAGHETTI SAUCE", "ASPIRIN REG", "NEUTROGENA WAS", "WHITE POTATO",
+        "COLGATE THPASTE", "RUFFLES SOUR CRM", "LAYS KETCHUP", "COCKTAILS", "STARBUCKS", "BIRTHDAY BAG",
+        "COUNTRY MUSHROOM", "CATELLI GARDEN SELECT", "FV FOODS UBE", "PINOY DELIGHT SIOPAO PORK")
     fun findDate(text: String): String{
         var buy_date = getCurrentDateTime()
         val pattern = Pattern.compile(datePattern)
@@ -34,6 +39,12 @@ class ProductTools {
         val matches = namePattern.findAll(line)
         for(match in matches)
             prodName = match.value
+        if(prodName == "No Product Found"){
+            for(pN in productNames){
+                if(line.contains(pN, true))
+                    prodName = pN
+            }
+        }
         return prodName
     }
 
