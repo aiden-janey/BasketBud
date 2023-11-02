@@ -294,9 +294,9 @@ class CameraActivity : AppCompatActivity() {
                                         userId
                                     )
 
-                                    if(!product.prod_name.equals("No Product Found") &&
-                                        !product.prod_price.equals("No Price Found") &&
-                                        !product.store_id.equals("No StoreID Found")){
+                                    if(product.prod_name != "No Product Found" &&
+                                        product.prod_price != "No Price Found" &&
+                                        product.store_id != "No StoreID Found") {
                                         addProduct(product)
                                     }
 
