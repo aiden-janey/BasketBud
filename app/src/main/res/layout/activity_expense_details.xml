@@ -40,7 +40,7 @@
 
         <TextView
             android:id="@+id/expense_details_title"
-            android:layout_width="230dp"
+            android:layout_width="210dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/toolbar"
             android:text="Expense Details"
