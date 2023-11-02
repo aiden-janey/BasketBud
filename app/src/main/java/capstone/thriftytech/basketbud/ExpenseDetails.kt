@@ -86,10 +86,10 @@ class ExpenseDetails : AppCompatActivity() {
         val purchaseTotal = intent.getDoubleExtra("purchaseTotal", 0.0)
         val store = intent.getStringExtra("store")
 
-        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        val parsedDate = dateFormat.parse(purchaseDate)
+        val inputDateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()) // Use the correct date format here
+        val parsedDate = inputDateFormat.parse(purchaseDate)
 
-        val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateFormatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         val formattedDate = dateFormatter.format(parsedDate)
 
         purchaseDateDetailsTV.text = formattedDate

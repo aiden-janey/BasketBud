@@ -48,6 +48,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.io.File
 import com.google.mlkit.vision.common.InputImage
+import java.text.ParseException
 import java.util.Date
 
 typealias LumaListener = (luma: Double) -> Unit
@@ -267,6 +268,7 @@ class CameraActivity : AppCompatActivity() {
                             )
 
                             var date = productTools.findDate(text)
+                            storeName = store.store_name.toString()
                             var storeId = addStore(store)
 
                             val userId = if(auth.currentUser != null){
@@ -291,7 +293,6 @@ class CameraActivity : AppCompatActivity() {
                                         storeId,
                                         userId
                                     )
-
                                     addProduct(product)
                                 }
                             }
@@ -311,13 +312,41 @@ class CameraActivity : AppCompatActivity() {
                             purchaseTotal = lastMatchedValue?.replace(Regex("[^\\d.]"), "")?.toDoubleOrNull() ?: 0.0
 
                             // Recognizing Purchase Date
-                            var datePattern = Regex("""(\d{2}/\d{2}/\d{4}|\d{2}/\d{2}/\d{2})""")
-                            var dateMatcher = datePattern.find(text)
-
                             val outputDateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
 
+                            var datePattern = Regex("""\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{4}\b""", RegexOption.IGNORE_CASE) // Oct 29, 2023
+                            var dateMatcher = datePattern.find(text)
+
+                            if (dateMatcher == null) {
+                                datePattern = Regex("""\d{2}/\d{2}/\d{4}""") // MM/dd/yyyy
+                                dateMatcher = datePattern.find(text)
+                            }
+
+                            if (dateMatcher == null) {
+                                datePattern = Regex("""\d{2}/\d{2}/\d{2}""") // yy/MM/dd
+                                dateMatcher = datePattern.find(text)
+                            }
+
+                            var parsedDate: Date? = null
+
                             if (dateMatcher != null) {
-                                purchaseDate = dateMatcher.value
+                                val originalDate = dateMatcher.value
+                                val inputDateFormat = if (originalDate.length == 10) {
+                                    SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+                                } else {
+                                    SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                                }
+
+                                try {
+                                    parsedDate = inputDateFormat.parse(originalDate)
+                                    Log.d("Parsed Date", "Parsed Date: $parsedDate")
+                                } catch (e: ParseException) {
+                                    parsedDate = null
+                                }
+                            }
+
+                            if (parsedDate != null) {
+                                purchaseDate = outputDateFormat.format(parsedDate)
                             } else {
                                 val currentDate = Date()
                                 purchaseDate = outputDateFormat.format(currentDate)

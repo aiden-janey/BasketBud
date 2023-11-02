@@ -5,7 +5,7 @@ class StoreTools {
         "15 RESOLUTION DR", "100 BISCAYNE CRES", "345 MAIN ST N", "1 BARTLEY BULL PKWY", "150 WEST DR",
         "345 MAIN ST N", "295 QUEEN ST E")
     val stores = arrayOf("GIANT TIGER", "METRO", "WALMART", "FOOD BASICS", "NO FRILLS", "SHOPPERS",
-        "DOLLARAMA", "COSTCO", "OCEANS", "OCEANS FRESH FOOD MARKET", "OCEANS")
+        "DOLLARAMA", "COSTCO", "OCEANS", "OCEANS FRESH FOOD MARKET")
     val cities = arrayOf("BRAMPTON", "MISSISSAUGA", "TORONTO", "OAKVILLE", "HAMILTON")
     val provinces = arrayOf("ON", "ONT")
 
