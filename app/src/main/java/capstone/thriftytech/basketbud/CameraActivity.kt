@@ -293,7 +293,13 @@ class CameraActivity : AppCompatActivity() {
                                         storeId,
                                         userId
                                     )
-                                    addProduct(product)
+
+                                    if(product.prod_name != "No Product Found" &&
+                                        product.prod_price != "No Price Found" &&
+                                        product.store_id != "No StoreID Found") {
+                                        addProduct(product)
+                                    }
+
                                 }
                             }
 
