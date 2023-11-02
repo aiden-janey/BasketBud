@@ -150,7 +150,7 @@ class CameraActivity : AppCompatActivity() {
 
             val imgAnalyze = ImageAnalysis.Builder().build().also{
                 it.setAnalyzer(camExecutor, LuminosityAnalyzer{
-                        luma->Log.d(TAG, "Average Luminosity $luma")
+                        //luma->Log.d(TAG, "Average Luminosity $luma")
                 })
             }
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -266,10 +266,8 @@ class CameraActivity : AppCompatActivity() {
                                 storeTools.findProv(it.text)
                             )
 
-                            storeName = store.store_name.toString()
-
-                            var date = "2023/10/29"
-                            addStore(store)
+                            var date = productTools.findDate(text)
+                            var storeId = addStore(store)
 
                             val userId = if(auth.currentUser != null){
                                 auth.currentUser!!.uid
@@ -280,16 +278,20 @@ class CameraActivity : AppCompatActivity() {
                             for (block in it.textBlocks) {
                                 for (line in block.lines) {
                                     val lineText = line.text
-                                    if(lineText.contains("SUBTOTAL", true))
+
+                                    Log.d("LineByLine", lineText)
+
+                                    if(lineText.contains("SUBTOTAL", true) || lineText.contains("SUBTOTAL:"))
                                         break
-                                    date = productTools.findDate(lineText)
+
                                     val product = Product(
                                         date,
                                         productTools.findName(lineText),
                                         productTools.findPrice(lineText),
-                                        getStoreId(store),
+                                        storeId,
                                         userId
                                     )
+
                                     addProduct(product)
                                 }
                             }
@@ -363,31 +365,22 @@ class CameraActivity : AppCompatActivity() {
         camExecutor.shutdown()
     }
 
-    private fun addStore(store: Store){
-        db.collection("stores").add(store).addOnSuccessListener {
-            Toast.makeText(this, "${store.store_name} is Added.", Toast.LENGTH_SHORT)
-        }.addOnFailureListener {
-            Toast.makeText(this, "Unable to add ${store.store_name}.", Toast.LENGTH_SHORT)
-        }
-    }
-
-    fun getStoreId(store: Store): String{
+    private fun addStore(store: Store): String{
         var storeId = "No StoreID Found"
-        db.collection("stores").whereEqualTo("store_name", store.store_name).get()
-            .addOnSuccessListener {
-            for(doc in it.documents)
-                storeId = doc.id
+        db.collection("stores").add(store).addOnSuccessListener {
+            Log.d("Add Store", "${store.store_name} is Added.")
+            storeId = it.id
         }.addOnFailureListener {
-            storeId = "No StoreID Found"
-            }
+            Log.d("Add Store", "Cant Add ${store.store_name}.")
+        }
         return storeId
     }
 
     private fun addProduct(product: Product){
         db.collection("products").add(product).addOnSuccessListener {
-            Toast.makeText(this, "${product.prod_name} is Added.", Toast.LENGTH_SHORT)
+            Log.d("Add Product", "${product.prod_name} is Added.")
         }.addOnFailureListener {
-            Toast.makeText(this, "Unable to add ${product.prod_name}.", Toast.LENGTH_SHORT)
+            Log.d("Add Product", "Can't Add ${product.prod_name}.")
         }
     }
 

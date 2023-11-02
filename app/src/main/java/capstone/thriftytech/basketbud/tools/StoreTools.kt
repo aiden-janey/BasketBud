@@ -1,7 +1,8 @@
 package capstone.thriftytech.basketbud.tools
 
 class StoreTools {
-    val addresses = arrayOf("499 MAIN STREET SOUTH", "160 MAIN STREET SOUTH")
+    val addresses = arrayOf("499 MAIN STREET SOUTH", "160 MAIN STREET SOUTH", "50 QUARRY EDGE DR",
+        "15 RESOLUTION DR", "100 BISCAYNE CRES", "345 MAIN ST N", "1 BARTLEY BULL PKWY")
     val stores = arrayOf("GIANT TIGER", "METRO", "WALMART", "FOOD BASICS", "NO FRILLS", "SHOPPERS",
         "DOLLARAMA", "COSTCO", "OCEANS", "OCEANS FRESH FOOD MARKET")
     val cities = arrayOf("BRAMPTON", "MISSISSAUGA", "TORONTO", "OAKVILLE", "HAMILTON")
