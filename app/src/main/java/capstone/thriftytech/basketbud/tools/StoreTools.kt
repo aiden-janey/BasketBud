@@ -1,5 +1,6 @@
 package capstone.thriftytech.basketbud.tools
 
+//Just a set of tools to help extract relevant data for the Store from the text extraction
 class StoreTools {
     val addresses = arrayOf("499 MAIN STREET SOUTH", "160 MAIN STREET SOUTH", "50 QUARRY EDGE DR",
         "15 RESOLUTION DR", "100 BISCAYNE CRES", "345 MAIN ST N", "1 BARTLEY BULL PKWY", "150 WEST DR",

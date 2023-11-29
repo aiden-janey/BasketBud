@@ -1,13 +1,10 @@
 package capstone.thriftytech.basketbud.tools
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.regex.Pattern
 
+//Just a set of tools to help extract relevant data for the Product from the text extraction
 class ProductTools {
     val pricePattern = """(\$?\d{1,3}(?:,?\d{3})*(?:\.\d{2})?)""".toRegex()
     val namePattern = """\\b[a-zA-Z]+\\b""".toRegex()

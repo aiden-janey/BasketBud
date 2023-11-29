@@ -249,17 +249,21 @@ class CameraActivity : AppCompatActivity() {
                     Log.e(TAG, "Photo capture failed: ${err.message}", err)
                 }
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    //Text Extract
                     val img: InputImage = InputImage.fromFilePath(baseContext, output.savedUri!!)
 
+                    //ML Kit's Text Recognition
                     recognizer.process(img)
                         .addOnSuccessListener {
                             Log.d("Receipt Data", it.text)
+
+                            //Extracted Text as a String
                             val text = it.text
+
                             var purchaseDate = ""
                             var storeName = ""
                             var purchaseTotal = 0.0
 
+                            //Create Store object
                             val store = Store(
                                 storeTools.findAddress(it.text),
                                 storeTools.findCity(it.text),
@@ -271,12 +275,14 @@ class CameraActivity : AppCompatActivity() {
                             storeName = store.store_name.toString()
                             var storeId = addStore(store)
 
+                            //Grab user's UID
                             val userId = if(auth.currentUser != null){
                                 auth.currentUser!!.uid
                             }else{
                                 "No User Found"
                             }
 
+                            //Go line by line to find each product
                             for (block in it.textBlocks) {
                                 for (line in block.lines) {
                                     val lineText = line.text
@@ -286,6 +292,7 @@ class CameraActivity : AppCompatActivity() {
                                     if(lineText.contains("SUBTOTAL", true) || lineText.contains("SUBTOTAL:"))
                                         break
 
+                                    //Create a Product object
                                     val product = Product(
                                         date,
                                         productTools.findName(lineText),
@@ -295,7 +302,6 @@ class CameraActivity : AppCompatActivity() {
                                     )
 
                                     addProduct(product)
-
                                 }
                             }
 
@@ -396,6 +402,7 @@ class CameraActivity : AppCompatActivity() {
         camExecutor.shutdown()
     }
 
+    //Insert Store into Firestore
     private fun addStore(store: Store): String{
         var storeId = "No StoreID Found"
         db.collection("stores").add(store).addOnSuccessListener {
@@ -407,6 +414,7 @@ class CameraActivity : AppCompatActivity() {
         return storeId
     }
 
+    //Inser Product into Firestore
     private fun addProduct(product: Product){
         db.collection("products").add(product).addOnSuccessListener {
             Log.d("Add Product", "${product.prod_name} is Added.")
@@ -415,6 +423,7 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
+    //Request Permissions
     companion object {
         private const val TAG = "BasketBud"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -428,6 +437,7 @@ class CameraActivity : AppCompatActivity() {
     }
 }
 
+//Used to analyze the image
 private class LuminosityAnalyzer(private val listener: LumaListener): ImageAnalysis.Analyzer{
     private fun ByteBuffer.toByteArray(): ByteArray {
         rewind()

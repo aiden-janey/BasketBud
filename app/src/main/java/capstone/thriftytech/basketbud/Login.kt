@@ -76,5 +76,5 @@ class Login : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
-    fun forgotPassword(view: View) {}
+
 }

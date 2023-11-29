@@ -1,5 +1,6 @@
 package capstone.thriftytech.basketbud.data
 
+//Defines the Product objects structure for CRUD operations with Firestore
 data class Product(
     val buy_date: String? = null,
     val prod_name: String? = null,
