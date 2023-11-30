@@ -5,32 +5,31 @@ Capstone 2023 Project by ThriftyTech
 
 ## Authors
 
-- [@octokatherine](https://www.github.com/octokatherine)
+- [@aiden-janey](https://www.github.com/aiden-janey)
+- [@nrohLK](https://www.github.com/nrohK)
+- [@wongtho](https://www.github.com/wongtho)
+- [@ManvirSohi](https://www.github.com/ManvirSohi)
 
 
 ## Demo
 
-Insert gif or link to demo
+[@Our Pitch Video](https://youtu.be/Z9PtQ6ulOkI)
 
 
 ## Tech Stack
 
-**Client:** React, Redux, TailwindCSS
+**Front-End:** Android
 
-**Server:** Node, Express
+**Back-End:** Firebase
 
 
-![Logo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/th5xamgrr6se0x5ro4g6.png)
+![Logo]()
 
 
 ## Installation
 
-Install my-project with npm
+Simply download the .apk from the Build branch.
 
-```bash
-  npm install my-project
-  cd my-project
-```
     
 ## Features
 
@@ -43,14 +42,3 @@ Install my-project with npm
 ## Screenshots
 
 ![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
-
-
-## Usage/Examples
-
-```javascript
-import Component from 'my-project'
-
-function App() {
-  return <Component />
-}
-```
