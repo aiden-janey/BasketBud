@@ -15,7 +15,7 @@ It's done by taking a picture of your grocery receipt and let the app log those 
 
 ## Demo
 
-[Our Pitch Video](https://youtu.be/Z9PtQ6ulOkI)
+[Our Pitch Video]()
 
 
 ## Tech Stack
