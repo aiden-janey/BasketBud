@@ -1,4 +1,5 @@
 # BasketBud
+![Logo]()
 
 BasketBud was our 2023 Capstone Project created by our team, ThriftyTech. It's a mobile grocery budgeting app that allows users to track their expenses.
 It's done by taking a picture of your grocery receipt and let the app log those purchases & provide your with info about your shopping habits.
@@ -23,8 +24,6 @@ It's done by taking a picture of your grocery receipt and let the app log those 
 
 **Back-End:** Firebase (Authentication, Firestore, Storage), CameraX with ML Kit
 
-
-![Logo](https://firebasestorage.googleapis.com/v0/b/basketbud-6ccf0.appspot.com/o/github-resources%2FBasketBudArtboard%201.png?alt=media&token=84c917ed-4d27-446e-bf71-8511c9407d42)
 
 
 ## Installation
