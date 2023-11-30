@@ -23,7 +23,7 @@ Capstone 2023 Project by ThriftyTech
 **Back-End:** Firebase
 
 
-![Logo]([gs://basketbud-6ccf0.appspot.com/github-resources/BasketBudArtboard 1.png](https://firebasestorage.googleapis.com/v0/b/basketbud-6ccf0.appspot.com/o/github-resources%2FBasketBudArtboard%201.png?alt=media&token=84c917ed-4d27-446e-bf71-8511c9407d42)
+![Logo]([gs://basketbud-6ccf0.appspot.com/github-resources/BasketBudArtboard 1.png](https://firebasestorage.googleapis.com/v0/b/basketbud-6ccf0.appspot.com/o/github-resources%2FBasketBudArtboard%201.png?alt=media&token=84c917ed-4d27-446e-bf71-8511c9407d42))
 
 
 ## Installation
