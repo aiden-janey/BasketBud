@@ -13,7 +13,7 @@ Capstone 2023 Project by ThriftyTech
 
 ## Demo
 
-[@Our Pitch Video](https://youtu.be/Z9PtQ6ulOkI)
+[Our Pitch Video](https://youtu.be/Z9PtQ6ulOkI)
 
 
 ## Tech Stack
